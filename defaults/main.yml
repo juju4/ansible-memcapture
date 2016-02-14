@@ -1,0 +1,39 @@
+---
+## note: colon in prefix creates issues (ex: LiME compile)
+#prefix: "{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 }}"
+#prefix: "{{ ansible_fqdn }}-{{ ansible_date_time.epoch }}"
+#prefix: "{{ ansible_fqdn }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }}"
+prefix: "{{ ansible_fqdn }}"
+
+## mount point for network share
+dst_mount: "/tmp/cases"
+## destination
+#dst_path: "/tmp/{{ prefix }}-incidentreport"
+#dst_path: "/vagrant/{{ prefix }}-incidentreport"
+dst_path: "{{ dst_mount }}/{{ prefix }}-incidentreport"
+#dst_path: network_mount
+#dst_path: netcat
+
+## do we want to install new packages? might be required if building kernel module for example
+## allow ansible to download stuff which does not exist, eventually build it?
+## more impacting the evidence but sometimes have no choice...
+do_download: true
+do_build: true
+do_install: true
+
+## can execute binaries from local network through nfs/smb or a local disk (but not really scaling here).
+## if not set, it means local
+#archives: nfs
+#archives: samba
+bin_path: "/tmp/ir-bin"
+## FIXME! trusted static binaries?
+##  https://github.com/andrew-d/static-binaries
+##  https://github.com/minos-org/minos-static
+
+## if using fmem, this is required! or extract for /proc/meminfo? (dd count format)
+## 512MB = 536870912 = 0x1fffffff
+## 4GB = 4294967296 = 0x100000000
+#memory_size:
+memory_size: 512
+memory_bs: 1M
+

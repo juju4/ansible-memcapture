@@ -1,0 +1,74 @@
+---
+- shell: uname -r
+  register: KVER
+  changed_when: false
+
+- name: apt | Extra packages install
+  apt: name={{item}} state=present
+  with_items:
+    - zip
+    - make
+    - gcc
+    - linux-generic
+    - linux-headers-{{ KVER.stdout }}
+  when: (do_install is defined and do_install) and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+
+- name: yum | Extra packages install
+  yum: name={{item}} state=present
+  with_items:
+    - zip
+    - make
+    - gcc
+    - gcc-c++
+    - kernel-devel
+    - kernel-headers
+  when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')  
+
+- name: Ensure appropriate symlink to latest src/kernels in order to build module
+  file: src=/usr/src/kernels/3.10.0-327.4.5.el7.x86_64 dest=/lib/modules/3.10.0-229.el7.x86_64/build state=link
+  #when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS') and ansible_distribution_version == '7.1'
+  when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+
+- stat: path={{ bin_path }}/LiME
+  register: gitlime
+- name: Lime git clone
+  git:
+    repo=https://github.com/504ensicsLabs/LiME.git
+    dest={{ bin_path }}/LiME
+  when: not gitlime.stat.exists and (do_download is defined and do_download)
+
+- stat: path={{ bin_path }}/volatility
+  register: gitvol
+- name: Volatility git clone
+  git:
+    repo=https://github.com/volatilityfoundation/volatility
+    dest={{ bin_path }}/volatility
+  when: not gitvol.stat.exists and (do_download is defined and do_download)
+
+- stat: path={{ bin_path }}/lmg
+  register: gitlmg
+- name: lmg git clone
+  git:
+    repo=https://github.com/juju4/lmg
+    dest={{ bin_path }}/lmg
+  when: not gitlmg.stat.exists and (do_download is defined and do_download)
+
+- stat: path={{ bin_path }}/lmg/dwarfdump/dwarfdump-i686
+  register: dwarf
+## Note: if nfs/samba mount, owner/perms might not be preserved so ignore those errors
+- name: Extract dwarfdump utilities
+  unarchive: src={{ bin_path }}/lmg/static-dwarfdump.tgz dest={{ bin_path }}/lmg
+  when: not dwarf.stat.exists and (do_download is defined and do_download)
+  ignore_errors: true
+
+- stat: path={{ dst_path }}/lmg/capture
+  register: memcapture
+- name: Take memory capture (lmg/lime)
+  command: "{{ item }} chdir={{ bin_path }}/lmg"
+  with_items:
+    - bash lmg -y
+  environment:
+    TARGETDIR: "{{ dst_path }}"
+  when: not memcapture.stat.exists
+
+

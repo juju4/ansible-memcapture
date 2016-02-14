@@ -1,0 +1,66 @@
+---
+## for older systems, use fmem
+- fail: msg="Missing memory size! required for fmem."
+  when: memory_size is undefined 
+
+- shell: uname -r
+  register: KVER
+
+- name: Debian | Extra packages install
+  apt: name={{item}} state=present
+  with_items:
+#    - zip
+    - make
+    - gcc
+    - linux-generic
+    - linux-headers-{{ KVER.stdout }}
+  when: doinstall
+
+- stat: path={{ bin_path }}/fmem_current.tgz
+  register: fmem
+- name: fmem download
+  get_url: url=http://hysteria.sk/~niekt0/foriana/fmem_current.tgz
+    dest={{ bin_path }}/fmem_current.tgz
+    mode=0400
+  when: not fmem.stat.exists and (do_download is defined and do_download)
+- name: Extract fmem
+  command: "{{ item }} chdir={{ bin_path }}"
+  with_items:
+    - "tar xzf {{ bin_path }}/fmem_current.tgz"
+  when: not fmem.stat.exists and (do_download is defined and do_download)
+
+# change memory size
+
+- stat: path={{ dst_path }}/{{ prefix }}-fmem-memory.img
+  register: memcapture2
+- name: FMEM | procinfo
+  shell: "{{ item }}"
+  with_items:
+    - "cat /proc/meminfo > {{ dst_path }}/{{ prefix }}-proc-meminfo"
+    - "cat /proc/iomem > {{ dst_path }}/{{ prefix }}-proc-iomem"
+    - "cat /proc/mtrr > {{ dst_path }}/{{ prefix }}-proc-mtrr"
+  when: not memcapture2.stat.exists
+
+- stat: path={{ bin_path }}/fmem_1.6-0/fmem.ko
+  register: fmemko
+## fmem.ko is probably kernel dependent, so better rebuild... or prebuilt
+- name: FMEM | memory capture
+  command: "{{ item }} chdir={{ bin_path }}/fmem_1.6-0"
+  with_items:
+    - make
+  when: not fmemko.stat.exists and (do_build is defined and do_build)
+
+## if multiple pre-compiled fmem
+#- copy: src={{ bin_path }}/fmem_1.6-0/run.sh dest={{ dst_path }}/run.sh mode=0755
+#- replace: dest={{ dst_path }}/run.sh regexp='fmem.ko' replace='{{ bin_path }}/fmem_1.6-0/fmem-{{ KVER.stdout }}.ko'
+
+- name: FMEM | memory capture
+  command: "{{ item }} chdir={{ bin_path }}/fmem_1.6-0"
+  with_items:
+    - ./run.sh
+    - dd if=/dev/fmem of={{ dst_path }}/{{ prefix }}-memory-fmem.img conv=noerror,sync bs={{ memory_bsd }} count={{ memory_size }}
+  when: not memcapture2.stat.exists
+## if run.sh/fmem.ko already loaded
+  ignore_errors: true
+
+

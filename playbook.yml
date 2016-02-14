@@ -1,0 +1,57 @@
+- hosts: all
+  sudo: true
+  vars:
+    - tmp_path: /tmp
+  tasks:
+## https://github.com/google/rekall/releases
+    - stat: path={{ tmp_path }}/linpmem_2.0.1.gz
+      register: linpmem
+    - name: Linpmem download
+      get_url: url=https://github.com/google/rekall/releases/download/v1.3.2/linpmem_2.0.1.gz
+        dest={{ tmp_path }}/linpmem_2.0.1.gz
+        mode=0400
+      when: not linpmem.stat.exists
+    - stat: path={{ tmp_path }}/memcapture.aff4
+      register: memcapture2
+    - name: Validate memory capture (linpmem)
+      command: "{{ item }} chdir={{ tmp_path }}"
+      with_items:
+        - gunzip linpmem_2.0.1.gz
+        - chmod 700 linpmem_2.0.1
+        - ./linpmem_2.0.1 -o {{ tmp_path }}/memcapture.aff4
+      when: not memcapture2.stat.exists
+    - name: Retrieve file to orchestrator
+      fetch: src={{ tmp_path }}/memcapture.aff4 dest=memcapture-{{ ansible_hostname }}.aff4
+
+## FIXME! nc or ssh output? check impact on memory
+
+### alternative
+#    - name: Debian | Extra packages install (for linpmem)
+#      apt: name={{item}} state=present
+#      with_items:
+#        - git
+#        - make
+#        - gcc
+#        - zip
+#      when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+#    - name: Lime git clone
+#      git:
+#        repo=https://github.com/504ensicsLabs/LiME.git
+#        dest={{ tmp_path }}/LiME
+#    - name: Volatility git clone
+#      git:
+#        repo=https://github.com/volatilityfoundation/volatility
+#        dest={{ tmp_path }}/volatility
+#    - name: lmg git clone
+#      git:
+#        repo=https://github.com/juju4/lmg
+#        dest={{ tmp_path }}/lmg
+#    - stat: path={{ tmp_path }}/lmg/capture
+#      register: memcapture
+#    - name: Validate memory capture (lmg/lime)
+#      command: "{{ item }} chdir={{ tmp_path }}/lmg"
+#      with_items:
+#        - tar xzf static-dwarfdump.tgz
+#        - bash lmg -y
+#      when: not memcapture.stat.exists
+#

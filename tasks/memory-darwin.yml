@@ -1,0 +1,19 @@
+---
+- stat: path={{ dst_path }}/osxpmem_2.0.1.zip
+  register: osxpmem
+- name: Osxpmem download
+  get_url: url=https://github.com/google/rekall/releases/download/v1.3.2/osxpmem_2.0.1.zip
+    dest={{ dst_path }}/osxpmem_2.0.1.zip
+    mode=0400
+  when: not osxpmem.stat.exists and (do_download is defined and do_download)
+
+- stat: path={{ dst_path }}/lmg/capture/{{ prefix }}-memory.aff4
+  register: memcapture2
+- name: Validate memory capture (linpmem)
+  command: "{{ item }} chdir={{ dst_path }}"
+  with_items:
+    - unzip osxpmem_2.0.1.zip
+    - chmod 700 osxpmem_2.0.1
+    - ./osxpmem_2.0.1 -o {{ dst_path }}/lmg/capture/{{ prefix }}-memory.aff4
+  when: not memcapture2.stat.exists
+

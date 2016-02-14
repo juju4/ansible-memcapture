@@ -1,0 +1,36 @@
+---
+
+- name: check appropriate directories exist
+  file: dest={{ item }} state=directory mode=0700
+  with_items:
+    - "{{ dst_mount }}"
+    - "{{ dst_path }}"
+    - "{{ bin_path }}"
+
+- name: Windows memory capture
+  include: memory-win.yml
+  when: ansible_os_family == 'Windows'
+
+# capture memory
+## https://docs.google.com/presentation/d/1savcvqRcMXpRyVrybWvbHGbJTgjInZcwLB5VokJdKa8/edit#slide=id.g26dcd0ccb_030
+#"c:\Program Files\Rekall\winpmem_1.6.0.exe" -e - | c:\Users\mic\Desktop\ncat.exe 172.16.21.93 8001  --ssl
+#ncat -l 8001 --ssl -v > myimage.elf
+
+- include: memory-linpmem.yml
+  when: ansible_system == 'Linux' and ansible_architecture == 'x86_64'
+  tags:
+    - linpmem
+
+## the next two applies mostly for i386 arch or older system
+- include: memory-fmem.yml
+  when: ansible_system == 'Linux' and ansible_architecture == 'i386'
+  tags:
+    - fmem
+
+- include: memory-lmg.yml
+  when: ansible_system == 'Linux'
+  tags:
+    - lmg
+
+## compress file after?
+

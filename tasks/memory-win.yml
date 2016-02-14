@@ -1,0 +1,25 @@
+---
+- win_stat: path={{ bin_path }}\winpmem_2.0.1.exe
+  register: winpmem
+- name: winpmem download
+  win_get_url: url=https://github.com/google/rekall/releases/download/v1.3.2/winpmem_2.0.1.exe
+    dest={{ bin_path }}\winpmem_2.0.1.exe
+    mode=0400
+  when: not winpmem.stat.exists and (do_download is defined and do_download)
+
+- win_stat: path="{{ dst_path }}\\{{ prefix }}-memory.aff4"
+  register: memcapture2
+
+## FIXME! through powershell ? (ansible 'script:')
+- name: Do memory capture (winpmem)
+  raw: "{{ bin_path }}\\winpmem_2.0.1 -o {{ dst_path }}\\{{ prefix }}-memory.aff4"
+  when: not memcapture2.stat.exists
+
+## https://docs.google.com/presentation/d/1savcvqRcMXpRyVrybWvbHGbJTgjInZcwLB5VokJdKa8/edit#slide=id.g26dcd0ccb_030
+#"c:\Program Files\Rekall\winpmem_1.6.0.exe" -e - | c:\Users\mic\Desktop\ncat.exe 172.16.21.93 8001  --ssl
+#ncat -l 8001 --ssl -v > myimage.elf
+
+## https://technet.microsoft.com/en-us/sysinternals/bb897438.aspx
+- name: force sync aka write to disk
+  raw: "{{ bin_path }}\\sync.exe -r -e"
+
