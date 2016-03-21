@@ -37,3 +37,7 @@ bin_path: "/tmp/ir-bin"
 memory_size: 512
 memory_bs: 1M
 
+memcapture_use_linpmem: true
+memcapture_use_fmem: true
+memcapture_use_lmg: true
+
