@@ -19,6 +19,7 @@
   register: memcapture2
 - name: memory capture (linpmem)
   command: "{{ item }} chdir={{ bin_path }}"
+  become: yes
   with_items:
     - ./linpmem_2.0.1 -o {{ dst_path }}/{{ prefix }}-memory-linpmem.aff4
   when: not memcapture2.stat.exists

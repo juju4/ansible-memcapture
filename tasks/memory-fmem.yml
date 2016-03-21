@@ -14,6 +14,7 @@
     - gcc
     - linux-generic
     - linux-headers-{{ KVER.stdout }}
+  become: yes
   when: doinstall
 
 - stat: path={{ bin_path }}/fmem_current.tgz
@@ -56,6 +57,7 @@
 
 - name: FMEM | memory capture
   command: "{{ item }} chdir={{ bin_path }}/fmem_1.6-0"
+  become: yes
   with_items:
     - ./run.sh
     - dd if=/dev/fmem of={{ dst_path }}/{{ prefix }}-memory-fmem.img conv=noerror,sync bs={{ memory_bsd }} count={{ memory_size }}

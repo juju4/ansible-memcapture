@@ -11,6 +11,7 @@
   register: memcapture2
 - name: Validate memory capture (linpmem)
   command: "{{ item }} chdir={{ dst_path }}"
+  become: yes
   with_items:
     - unzip osxpmem_2.0.1.zip
     - chmod 700 osxpmem_2.0.1

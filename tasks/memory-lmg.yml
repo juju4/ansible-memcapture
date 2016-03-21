@@ -11,6 +11,7 @@
     - gcc
     - linux-generic
     - linux-headers-{{ KVER.stdout }}
+  become: yes
   when: (do_install is defined and do_install) and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
 
 - name: yum | Extra packages install
@@ -22,11 +23,13 @@
     - gcc-c++
     - kernel-devel
     - kernel-headers
+  become: yes
   when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')  
 
 - name: Ensure appropriate symlink to latest src/kernels in order to build module
   file: src=/usr/src/kernels/3.10.0-327.4.5.el7.x86_64 dest=/lib/modules/3.10.0-229.el7.x86_64/build state=link
   #when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS') and ansible_distribution_version == '7.1'
+  become: yes
   when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 
 - stat: path={{ bin_path }}/LiME
@@ -69,6 +72,7 @@
     - bash lmg -y
   environment:
     TARGETDIR: "{{ dst_path }}"
+  become: yes
   when: not memcapture.stat.exists
 
 
