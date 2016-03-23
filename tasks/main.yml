@@ -1,5 +1,9 @@
 ---
 
+- debug: var=memcapture_use_linpmem
+- debug: var=memcapture_use_fmem
+- debug: var=memcapture_use_lmg
+
 - name: check appropriate directories exist
   file: dest={{ item }} state=directory mode=0700
   with_items:
