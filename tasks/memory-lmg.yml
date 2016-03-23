@@ -13,6 +13,9 @@
     - linux-headers-{{ KVER.stdout }}
   become: yes
   when: (do_install is defined and do_install) and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+## Note: seems distribution are not keeping their linux-headers for all base kernel...
+##	Ubuntu12.04 "No package matching 'linux-headers-3.19.0-30-generic' is available"
+  ignore_errors: true
 
 - name: yum | Extra packages install
   yum: name={{item}} state=present
@@ -26,6 +29,11 @@
   become: yes
   when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')  
 
+- command: "ls /usr/src/kernels/ /lib/modules/"
+  register: d1
+  when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+- debug: var=d1.stdout_lines
+  when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - name: Ensure appropriate symlink to latest src/kernels in order to build module
   file: src=/usr/src/kernels/3.10.0-327.4.5.el7.x86_64 dest=/lib/modules/3.10.0-229.el7.x86_64/build state=link
   #when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS') and ansible_distribution_version == '7.1'
@@ -75,5 +83,9 @@
   become: yes
   when: not memcapture.stat.exists
   ignore_errors: true
+  register: lmgout
+
+- debug: var=lmgout.stdout_lines
+  when: lmgout.rc != 0
 
 

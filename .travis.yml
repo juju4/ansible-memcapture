@@ -27,6 +27,7 @@ before_install:
   # - sudo apt-get update
   # Pull container
   - 'sudo docker pull ${distribution}:${version}'
+  - ansible --version
   - env
   - pwd
   - find -ls
