@@ -37,4 +37,7 @@
     - lmg
 
 ## compress file after?
+- shell: "ls -alhR {{ dst_path }}/*-incidentreport/ | egrep '(aff4|lime|zip)'"
+  register: lsout
+- debug: var=lsout.stdout_lines
 
