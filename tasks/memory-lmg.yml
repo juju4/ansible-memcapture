@@ -29,13 +29,14 @@
   become: yes
   when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')  
 
-- command: "ls /usr/src/kernels/ /lib/modules/"
+- command: "uname -a"
+- command: "ls /usr/src/kernels/"
   register: d1
   when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - debug: var=d1.stdout_lines
   when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - name: Ensure appropriate symlink to latest src/kernels in order to build module
-  file: src=/usr/src/kernels/3.10.0-327.4.5.el7.x86_64 dest=/lib/modules/3.10.0-229.el7.x86_64/build state=link
+  file: "src=/usr/src/kernels/{{ d1.stdout_lines }} dest=/lib/modules/3.10.0-229.el7.x86_64/build state=link"
   #when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS') and ansible_distribution_version == '7.1'
   become: yes
   when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
@@ -75,9 +76,7 @@
 - stat: path={{ dst_path }}/lmg/capture
   register: memcapture
 - name: Take memory capture (lmg/lime)
-  command: "{{ item }} chdir={{ bin_path }}/lmg"
-  with_items:
-    - bash lmg -y
+  command: "bash lmg -y chdir={{ bin_path }}/lmg"
   environment:
     TARGETDIR: "{{ dst_path }}"
   become: yes
