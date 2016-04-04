@@ -46,5 +46,6 @@
 - shell: "find {{ dst_path }}/ -ls | egrep '(aff4|lime|zip)'"
   register: lsout
   changed_when: false
+  ignore_errors: true
 - debug: var=lsout.stdout_lines
 

@@ -42,6 +42,7 @@
   file: "src=/usr/src/kernels/{{ d2.stdout_lines.0 | replace('kernel-headers-', '') }} dest=/lib/modules/{{ ansible_kernel }}/build state=link"
   #when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS') and ansible_distribution_version == '7.1'
   become: yes
+  ignore_errors: true
   when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - stat: path={{ bin_path }}/LiME
   register: gitlime
