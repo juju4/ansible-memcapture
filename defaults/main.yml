@@ -11,15 +11,13 @@ dst_mount: "/tmp/cases"
 #dst_path: "/tmp/{{ prefix }}-incidentreport"
 #dst_path: "/vagrant/{{ prefix }}-incidentreport"
 dst_path: "{{ dst_mount }}/{{ prefix }}-incidentreport"
-#dst_path: network_mount
-#dst_path: netcat
 
 ## do we want to install new packages? might be required if building kernel module for example
 ## allow ansible to download stuff which does not exist, eventually build it?
 ## more impacting the evidence but sometimes have no choice...
-do_download: true
-do_build: true
-do_install: true
+memcapture_download: true
+memcapture_build: true
+memcapture_install: true
 
 ## can execute binaries from local network through nfs/smb or a local disk (but not really scaling here).
 ## if not set, it means local
@@ -34,8 +32,8 @@ bin_path: "/tmp/ir-bin"
 ## 512MB = 536870912 = 0x1fffffff
 ## 4GB = 4294967296 = 0x100000000
 #memory_size:
-memory_size: 512
-memory_bs: 1M
+memcapture_memory_size: 512
+memcapture_memory_bs: 1M
 
 memcapture_use_linpmem: true
 memcapture_use_fmem: true

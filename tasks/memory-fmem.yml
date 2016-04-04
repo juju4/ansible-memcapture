@@ -3,9 +3,6 @@
 - fail: msg="Missing memory size! required for fmem."
   when: memory_size is undefined 
 
-- shell: uname -r
-  register: KVER
-
 - name: Debian | Extra packages install
   apt: name={{item}} state=present
   with_items:
@@ -13,9 +10,9 @@
     - make
     - gcc
     - linux-generic
-    - linux-headers-{{ KVER.stdout }}
+    - linux-headers-{{ ansible_kernel }}
   become: yes
-  when: doinstall
+  when: memcapture_install is defined and memcapture_install
 
 - stat: path={{ bin_path }}/fmem_current.tgz
   register: fmem
@@ -23,12 +20,12 @@
   get_url: url=http://hysteria.sk/~niekt0/foriana/fmem_current.tgz
     dest={{ bin_path }}/fmem_current.tgz
     mode=0400
-  when: not fmem.stat.exists and (do_download is defined and do_download)
+  when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download)
 - name: Extract fmem
   command: "{{ item }} chdir={{ bin_path }}"
   with_items:
     - "tar xzf {{ bin_path }}/fmem_current.tgz"
-  when: not fmem.stat.exists and (do_download is defined and do_download)
+  when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download)
 
 # change memory size
 
@@ -49,11 +46,11 @@
   command: "{{ item }} chdir={{ bin_path }}/fmem_1.6-0"
   with_items:
     - make
-  when: not fmemko.stat.exists and (do_build is defined and do_build)
+  when: not fmemko.stat.exists and (memcapture_build is defined and memcapture_build)
 
 ## if multiple pre-compiled fmem
 #- copy: src={{ bin_path }}/fmem_1.6-0/run.sh dest={{ dst_path }}/run.sh mode=0755
-#- replace: dest={{ dst_path }}/run.sh regexp='fmem.ko' replace='{{ bin_path }}/fmem_1.6-0/fmem-{{ KVER.stdout }}.ko'
+#- replace: dest={{ dst_path }}/run.sh regexp='fmem.ko' replace='{{ bin_path }}/fmem_1.6-0/fmem-{{ ansible_kernel }}.ko'
 
 - name: FMEM | memory capture
   command: "{{ item }} chdir={{ bin_path }}/fmem_1.6-0"

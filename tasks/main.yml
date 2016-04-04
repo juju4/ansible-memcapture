@@ -3,6 +3,12 @@
 - debug: var=memcapture_use_linpmem
 - debug: var=memcapture_use_fmem
 - debug: var=memcapture_use_lmg
+- shell: "whoami"
+  changed_when: false
+- shell: "whoami"
+  changed_when: false
+  become: yes
+
 
 - name: check appropriate directories exist
   file: dest={{ item }} state=directory mode=0700
@@ -37,7 +43,8 @@
     - lmg
 
 ## compress file after?
-- shell: "ls -alhR {{ dst_path }}/*-incidentreport/ | egrep '(aff4|lime|zip)'"
+- shell: "find {{ dst_path }}/ -ls | egrep '(aff4|lime|zip)'"
   register: lsout
+  changed_when: false
 - debug: var=lsout.stdout_lines
 

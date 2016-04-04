@@ -30,6 +30,9 @@ before_install:
   - env
   - pwd
   - find -ls
+## No kernel modules/headers: https://github.com/travis-ci/travis-ci/issues/2291 = mem_capture = false
+  - uname -a
+  - find /lib/modules/ -maxdepth 2 -name build
   # Customize container
   - 'sudo docker build --rm=true --file=test/travis/Dockerfile.${distribution}-${version} --tag=${distribution}-${version}:ansible test'
 
@@ -44,11 +47,11 @@ script:
   - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/roles/memcapture/test/integration/default/default.yml --syntax-check'
 
   # Test role.
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/roles/memcapture/test/integration/default/default.yml -e memcapture_use_linpmem=false'
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook -e memcapture_use_lmg=false -e memcapture_use_fmem=false /etc/ansible/roles/memcapture/test/integration/default/default.yml'
 
   # Test role idempotence.
   - >
-    sudo docker exec "$(cat ${container_id})" ansible-playbook /etc/ansible/roles/memcapture/test/integration/default/default.yml -e memcapture_use_linpmem=false
+    sudo docker exec "$(cat ${container_id})" ansible-playbook -e memcapture_use_lmg=false -e memcapture_use_fmem=false /etc/ansible/roles/memcapture/test/integration/default/default.yml
     | tee /tmp/idempotency.log
     | grep -q 'changed=0.*failed=0'
     && (echo 'Idempotence test: pass' && exit 0)

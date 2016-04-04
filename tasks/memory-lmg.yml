@@ -1,7 +1,4 @@
 ---
-- shell: uname -r
-  register: KVER
-  changed_when: false
 
 - name: apt | Extra packages install
   apt: name={{item}} state=present
@@ -10,9 +7,9 @@
     - make
     - gcc
     - linux-generic
-    - linux-headers-{{ KVER.stdout }}
+    - linux-headers-{{ ansible_kernel }}
   become: yes
-  when: (do_install is defined and do_install) and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+  when: (memcapture_install is defined and memcapture_install) and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
 ## Note: seems distribution are not keeping their linux-headers for all base kernel...
 ##	Ubuntu12.04 "No package matching 'linux-headers-3.19.0-30-generic' is available"
   ignore_errors: true
@@ -27,27 +24,30 @@
     - kernel-devel
     - kernel-headers
   become: yes
-  when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')  
+  when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')  
 
-- command: "uname -a"
 - command: "ls /usr/src/kernels/"
+  changed_when: false
   register: d1
-  when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+  when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+- command: "rpm -qa kernel-headers"
+  changed_when: false
+  register: d2
+  when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - debug: var=d1.stdout_lines
-  when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+  when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - name: Ensure appropriate symlink to latest src/kernels in order to build module
-  file: "src=/usr/src/kernels/{{ d1.stdout_lines }} dest=/lib/modules/3.10.0-229.el7.x86_64/build state=link"
-  #when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS') and ansible_distribution_version == '7.1'
+  file: "src=/usr/src/kernels/{{ d2.stdout_lines.0 | replace('kernel-headers-', '') }} dest=/lib/modules/{{ ansible_kernel }}/build state=link"
+  #when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS') and ansible_distribution_version == '7.1'
   become: yes
-  when: (do_install is defined and do_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
-
+  when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - stat: path={{ bin_path }}/LiME
   register: gitlime
 - name: Lime git clone
   git:
     repo=https://github.com/504ensicsLabs/LiME.git
     dest={{ bin_path }}/LiME
-  when: not gitlime.stat.exists and (do_download is defined and do_download)
+  when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download)
 
 - stat: path={{ bin_path }}/volatility
   register: gitvol
@@ -55,28 +55,36 @@
   git:
     repo=https://github.com/volatilityfoundation/volatility
     dest={{ bin_path }}/volatility
-  when: not gitvol.stat.exists and (do_download is defined and do_download)
+  when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download)
 
 - stat: path={{ bin_path }}/lmg
   register: gitlmg
+#    repo=https://github.com/juju4/lmg
 - name: lmg git clone
   git:
-    repo=https://github.com/juju4/lmg
+    repo=https://github.com/halpomeranz/lmg
     dest={{ bin_path }}/lmg
-  when: not gitlmg.stat.exists and (do_download is defined and do_download)
+  when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download)
+- name: CPU included in KVER
+  replace: dest="{{ bin_path }}/lmg/lmg" regexp='LIMEMOD=\$LIMEDIR/lime-\$KVER-\$CPU.ko' replace='LIMEMOD=$LIMEDIR/lime-$KVER.ko' backup=yes
+  when: (memcapture_install is defined and memcapture_install)
+- name: update volatility dir
+  replace: dest="{{ bin_path }}/lmg/lmg" regexp='VOLDIR=\$\(dirname \$\(find \$BUILDDIR -name module.c\) 2\>/dev/null\)' replace='VOLDIR={{ bin_path }}/volatility' backup=yes
+  when: (memcapture_install is defined and memcapture_install)
 
 - stat: path={{ bin_path }}/lmg/dwarfdump/dwarfdump-i686
   register: dwarf
 ## Note: if nfs/samba mount, owner/perms might not be preserved so ignore those errors
 - name: Extract dwarfdump utilities
   unarchive: src={{ bin_path }}/lmg/static-dwarfdump.tgz dest={{ bin_path }}/lmg
-  when: not dwarf.stat.exists and (do_download is defined and do_download)
+  when: not dwarf.stat.exists and (memcapture_download is defined and memcapture_download)
   ignore_errors: true
 
 - stat: path={{ dst_path }}/lmg/capture
   register: memcapture
 - name: Take memory capture (lmg/lime)
-  command: "bash lmg -y chdir={{ bin_path }}/lmg"
+#  command: "bash lmg -y chdir={{ bin_path }}/lmg"
+  command: "bash lmg -y -d {{ dst_path }} -B {{ bin_path }}/LiME chdir={{ bin_path }}/lmg"
   environment:
     TARGETDIR: "{{ dst_path }}"
   become: yes
@@ -85,6 +93,6 @@
   register: lmgout
 
 - debug: var=lmgout.stdout_lines
-  when: lmgout.rc != 0
+  when: lmgout is defined and lmgout.rc != 0
 
 

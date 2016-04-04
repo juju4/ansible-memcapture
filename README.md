@@ -57,14 +57,17 @@ bin_path: "/tmp/ir-bin"
 
 ## Continuous integration
 
-you can test this role with test kitchen.
-In the role folder, run
+you can test this role with test kitchen or travis.
 ```
+$ cd /path/to/roles/myrole
 $ kitchen verify
+$ kitchen login
 ```
 
 Known bugs
 * fmem is more fitted for older distribution and unmaintained it seems
+* Travis CI is not testing execution as there is no kernel modules support
+https://github.com/travis-ci/travis-ci/issues/2291
 
 ## Troubleshooting & Known issues
 

@@ -14,8 +14,8 @@ describe command('ls -al /tmp/cases/*-incidentreport/capture/*/*-memory.lime') d
 #  its(:size) { should > 0 }
 end
 
-describe command('ls -al /tmp/cases/*-incidentreport/capture/*/*-profile.zip') do
-  its(:stdout) { should match /profile.zip/ }
+#describe command('ls -al /tmp/cases/*-incidentreport/capture/*/*-profile.zip') do
+#  its(:stdout) { should match /profile.zip/ }
 #  its(:size) { should > 0 }
-end
+#end
 
