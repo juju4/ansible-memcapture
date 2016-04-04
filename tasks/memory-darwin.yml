@@ -16,5 +16,5 @@
     - unzip osxpmem_2.0.1.zip
     - chmod 700 osxpmem_2.0.1
     - ./osxpmem_2.0.1 -o {{ dst_path }}/lmg/capture/{{ prefix }}-memory.aff4
-  when: not memcapture2.stat.exists
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
 

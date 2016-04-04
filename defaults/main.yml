@@ -18,6 +18,7 @@ dst_path: "{{ dst_mount }}/{{ prefix }}-incidentreport"
 memcapture_download: true
 memcapture_build: true
 memcapture_install: true
+memcapture_capture: false
 
 ## can execute binaries from local network through nfs/smb or a local disk (but not really scaling here).
 ## if not set, it means local

@@ -2,7 +2,7 @@
 
 - hosts: all
   vars:
-    memcapture_capture: true
+    memcapture_capture: false
   roles:
     - memcapture
 

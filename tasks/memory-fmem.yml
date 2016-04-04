@@ -58,7 +58,7 @@
   with_items:
     - ./run.sh
     - dd if=/dev/fmem of={{ dst_path }}/{{ prefix }}-memory-fmem.img conv=noerror,sync bs={{ memory_bsd }} count={{ memory_size }}
-  when: not memcapture2.stat.exists
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
 ## if run.sh/fmem.ko already loaded
   ignore_errors: true
 

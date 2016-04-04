@@ -22,6 +22,6 @@
   become: yes
   with_items:
     - ./linpmem_2.0.1 -o {{ dst_path }}/{{ prefix }}-memory-linpmem.aff4
-  when: not memcapture2.stat.exists
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
   ignore_errors: true
 

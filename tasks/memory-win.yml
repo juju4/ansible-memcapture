@@ -13,7 +13,7 @@
 ## FIXME! through powershell ? (ansible 'script:')
 - name: Do memory capture (winpmem)
   raw: "{{ bin_path }}\\winpmem_2.0.1 -o {{ dst_path }}\\{{ prefix }}-memory.aff4"
-  when: not memcapture2.stat.exists
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
 
 ## https://docs.google.com/presentation/d/1savcvqRcMXpRyVrybWvbHGbJTgjInZcwLB5VokJdKa8/edit#slide=id.g26dcd0ccb_030
 #"c:\Program Files\Rekall\winpmem_1.6.0.exe" -e - | c:\Users\mic\Desktop\ncat.exe 172.16.21.93 8001  --ssl
