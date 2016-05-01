@@ -1,27 +1,33 @@
 ---
+## how to measure memory impact? ps, /proc/*pid*/status, pmap, smem... http://elinux.org/Runtime_Memory_Measurement
 
-- stat: path={{ bin_path }}/linpmem_2.0.1
+- set_fact:
+    linpmem_archive: "{{ bin_path }}/{{ memcapture_linpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
+- set_fact:
+    linpmem_bin: "{{ linpmem_archive | regex_replace('.(gz|tgz)$', '') }}"
+    linpmem_capture: "{{ dst_path }}/{{ prefix }}-memory-linpmem.{{ memcapture_linpmem_ext }}"
+
+- stat: path="{{ linpmem_bin }}"
   register: linpmem
 - name: Linpmem download
-  get_url: url=https://github.com/google/rekall/releases/download/v1.3.2/linpmem_2.0.1.gz
-    dest={{ bin_path }}/linpmem_2.0.1.gz
+  get_url: url="{{ memcapture_linpmem_url }}"
+    dest="{{ linpmem_archive }}"
     mode=0400
   when: not linpmem.stat.exists and (memcapture_download is defined and memcapture_download)
 
 - name: Extract linpmem
-  command: "gunzip {{ bin_path }}/linpmem_2.0.1.gz chdir={{ bin_path }}"
+  command: "gunzip {{ linpmem_archive }} chdir={{ bin_path }}"
 ## require unzip to be installed
-#  unarchive: src="{{ bin_path }}/linpmem_2.0.1.gz" dest="{{ bin_path }}" copy=no
+#  unarchive: src="{{ bin_path }}/{{ linpmem_archive }}" dest="{{ bin_path }}" copy=no
   when: not linpmem.stat.exists
 
-- file: "path={{ bin_path }}/linpmem_2.0.1 mode=0700"
-- stat: path={{ dst_path }}/{{ prefix }}-memory-linpmem.aff4
+- name: check appropriate permissions
+  file: "path={{ linpmem_bin }} mode=0700"
+- stat: path="{{ linpmem_capture }}"
   register: memcapture2
 - name: memory capture (linpmem)
-  command: "{{ item }} chdir={{ bin_path }}"
+  command: "{{ linpmem_bin }} -o {{ linpmem_capture }} chdir={{ bin_path }}"
   become: yes
-  with_items:
-    - ./linpmem_2.0.1 -o {{ dst_path }}/{{ prefix }}-memory-linpmem.aff4
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
   ignore_errors: true
 

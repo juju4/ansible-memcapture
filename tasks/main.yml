@@ -43,7 +43,7 @@
     - lmg
 
 ## compress file after?
-- shell: "find {{ dst_path }}/ -ls | egrep '(aff4|lime|zip)'"
+- shell: "find {{ dst_path }}/ -ls | egrep '(aff4|lime|zip|fmem)'"
   register: lsout
   changed_when: false
   ignore_errors: true
