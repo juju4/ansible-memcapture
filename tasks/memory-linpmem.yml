@@ -19,7 +19,7 @@
   command: "gunzip {{ linpmem_archive }} chdir={{ bin_path }}"
 ## require unzip to be installed
 #  unarchive: src="{{ bin_path }}/{{ linpmem_archive }}" dest="{{ bin_path }}" copy=no
-  when: not linpmem.stat.exists
+  when: not linpmem.stat.exists and memcapture_linpmem_url.find('.tgz') != -1
 
 - name: check appropriate permissions
   file: "path={{ linpmem_bin }} mode=0700"
