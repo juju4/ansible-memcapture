@@ -41,21 +41,21 @@ memcapture_use_linpmem: true
 memcapture_use_fmem: true
 memcapture_use_lmg: true
 
-#memcapture_winpmem_v: 2.1.post1
-#memcapture_winpmem_url: https://github.com/google/rekall/releases/download/v1.5.0/winpmem_2.1.post1.exe
+#memcapture_winpmem_v: 2.1.post4
+#memcapture_winpmem_url: https://github.com/google/rekall/releases/download/v1.5.1/winpmem-2.1.post4.exe
 #memcapture_winpmem_ext: aff4
 memcapture_winpmem_v: 1.6.2
 memcapture_winpmem_url: https://github.com/google/rekall/releases/download/v1.3.1/winpmem_1.6.2.exe
 memcapture_winpmem_ext: img
-memcapture_linpmem_v: 2.0.1
-memcapture_linpmem_url: https://github.com/google/rekall/releases/download/v1.3.2/linpmem_2.0.1.gz
+memcapture_linpmem_v: 2.1.post4
+memcapture_linpmem_url: https://github.com/google/rekall/releases/download/v1.5.1/linpmem-2.1.post4
 memcapture_linpmem_ext: aff4
 ## linpmem v1 is distributed as source, need to be compile but not as is on 2016 kernel
 #memcapture_linpmem_v: 1.0RC1
 #memcapture_linpmem_url: https://github.com/google/rekall/releases/download/v1.0.2/linux_pmem_1.0RC1.tgz
 #memcapture_linpmem_ext: img
-memcapture_osxpmem_v: 2.0.1
-memcapture_osxpmem_url: https://github.com/google/rekall/releases/download/v1.3.2/osxpmem_2.0.1.zip
+memcapture_osxpmem_v: 2.1.post4
+memcapture_osxpmem_url: https://github.com/google/rekall/releases/download/v1.5.1/osxpmem-2.1.post4.zip
 memcapture_osxpmem_ext: aff4
 #memcapture_osxpmem_v: 1.0RC3
 #memcapture_osxpmem_url: https://github.com/google/rekall/releases/download/v1.0rc11/OSXPMem-RC3-signed.tar.gz
