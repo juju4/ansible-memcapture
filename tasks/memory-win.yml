@@ -1,7 +1,7 @@
 ---
 
 - set_fact:
-    winpmem_bin: "{{ bin_path }}\{{ memcapture_winpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
+    winpmem_bin: "{{ bin_path }}\\{{ memcapture_winpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
     winpmem_capture: "{{ dst_path }}\\{{ prefix }}-memory.{{ memcapture_winpmem_ext }}"
 
 - win_stat: path="{{ winpmem_bin }}"

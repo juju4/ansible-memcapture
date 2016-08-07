@@ -26,7 +26,7 @@
     - kernel-devel
     - kernel-headers
   become: yes
-  when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')  
+  when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 
 - command: "ls /usr/src/kernels/"
   changed_when: false
