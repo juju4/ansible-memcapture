@@ -1,6 +1,6 @@
 ---
 
-- name: apt | Extra packages install
+- name: apt | Extra packages install for lmg
   apt: name={{item}} state=present
   with_items:
     - git
@@ -15,7 +15,7 @@
 ##	Ubuntu12.04 "No package matching 'linux-headers-3.19.0-30-generic' is available"
   ignore_errors: true
 
-- name: yum | Extra packages install
+- name: yum | Extra packages install for lmg
   yum: name={{item}} state=present
   with_items:
     - git
@@ -28,11 +28,13 @@
   become: yes
   when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 
-- command: "ls /usr/src/kernels/"
+- name: check installed kernels
+  command: "ls /usr/src/kernels/"
   changed_when: false
   register: d1
   when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
-- command: "rpm -qa kernel-headers"
+- name: redhat | check installed kernel-headers rpm
+  command: "rpm -qa kernel-headers"
   changed_when: false
   register: d2
   when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')

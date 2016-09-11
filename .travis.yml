@@ -12,11 +12,19 @@ env:
     init: /usr/lib/systemd/systemd
     run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
   - distribution: ubuntu
+    version: 16.04
+    init: /lib/systemd/systemd
+    run_opts: ""
+  - distribution: ubuntu
     version: 14.04
     init: /sbin/init
     run_opts: ""
   - distribution: ubuntu
     version: 12.04
+    init: /sbin/init
+    run_opts: ""
+  - distribution: alpine
+    version: 3.4
     init: /sbin/init
     run_opts: ""
 
@@ -30,6 +38,9 @@ before_install:
   - env
   - pwd
   - find -ls
+  - ln -s ansible-memcapture ../memcapture
+#  - ./get-dependencies.sh
+  - cp test/travis/initctl_faker test/
 ## No kernel modules/headers: https://github.com/travis-ci/travis-ci/issues/2291 = mem_capture = false
   - uname -a
   - find /lib/modules/ -maxdepth 2 -name build

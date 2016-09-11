@@ -1,0 +1,8 @@
+---
+
+- hosts: all
+  vars:
+    memcapture_capture: false
+  roles:
+    - memcapture
+
