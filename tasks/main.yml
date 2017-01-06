@@ -3,12 +3,7 @@
 - debug: var=memcapture_use_linpmem
 - debug: var=memcapture_use_fmem
 - debug: var=memcapture_use_lmg
-- shell: "whoami"
-  changed_when: false
-- shell: "whoami"
-  changed_when: false
-  become: yes
-
+- debug: var=memcapture_capture
 
 - name: check appropriate directories exist
   file: dest={{ item }} state=directory mode=0700
@@ -43,9 +38,20 @@
     - lmg
 
 ## compress file after?
-- shell: "find {{ dst_path }}/ -ls | egrep '(aff4|lime|zip|fmem)'"
-  register: lsout
-  changed_when: false
-  ignore_errors: true
-- debug: var=lsout.stdout_lines
+- block:
+    - name: Ensure we have output files (GNU find)
+      shell: "find {{ dst_path }}/ -ls | egrep '(aff4|lime|zip|fmem)'"
+      register: lsout
+      changed_when: false
+      ignore_errors: true
+    - debug: var=lsout.stdout_lines
+  when: ansible_system == 'Linux' and ansible_distribution != 'Alpine'
+- block:
+    - name: Ensure we have output files
+      shell: "find {{ dst_path }}/ | egrep '(aff4|lime|zip|fmem)'"
+      register: lsout2
+      changed_when: false
+      ignore_errors: true
+    - debug: var=lsout2.stdout_lines
+  when: ansible_system != 'Linux' or ansible_distribution == 'Alpine'
 
