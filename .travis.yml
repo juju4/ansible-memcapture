@@ -38,8 +38,7 @@ before_install:
   - env
   - pwd
   - find -ls
-  - ln -s ansible-memcapture ../memcapture
-#  - ./get-dependencies.sh
+  - "[ -f get-dependencies.sh ] && sh -x get-dependencies.sh"
   - cp test/travis/initctl_faker test/
 ## No kernel modules/headers: https://github.com/travis-ci/travis-ci/issues/2291 = mem_capture = false
   - uname -a
@@ -55,14 +54,14 @@ script:
   - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible --version'
 
   # Ansible syntax check.
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/roles/memcapture/test/integration/default/travis.yml --syntax-check'
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/rolesjuju4.memcapturetest/integration/default/travis.yml --syntax-check'
 
   # Test role.
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/roles/memcapture/test/integration/default/travis.yml'
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/rolesjuju4.memcapturetest/integration/default/travis.yml'
 
   # Test role idempotence.
   - >
-    sudo docker exec "$(cat ${container_id})" ansible-playbook /etc/ansible/roles/memcapture/test/integration/default/travis.yml
+    sudo docker exec "$(cat ${container_id})" ansible-playbook /etc/ansible/rolesjuju4.memcapturetest/integration/default/travis.yml
     | tee /tmp/idempotency.log
     | grep -q 'changed=0.*failed=0'
     && (echo 'Idempotence test: pass' && exit 0)
