@@ -4,5 +4,5 @@
   vars:
     memcapture_capture: true
   roles:
-    - memcapture
+    - juju4.memcapture
 
