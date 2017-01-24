@@ -114,11 +114,6 @@
   ignore_errors: true
   register: lmgout
 
-- debug: var=ansible_kernel
-- name: recreate volatility profile archive
-#  command: "zip {{ dst_path }}/{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }} creates={{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip chdir={{ bin_path }}"
-  command: "zip {{ bin_path }}/volatility/plugins/overlays/linux//{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }} creates={{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip chdir={{ bin_path }}"
-
 ## https://github.com/volatilityfoundation/volatility/wiki/Linux
 - name: retrieve lmg output dir
   shell: "ls -At {{ dst_path }}/capture/ | head -1"
@@ -133,14 +128,21 @@
   register: outputstat
 - debug: var=outputstat.stat.checksum
 
-- name: check profile is valid
-  #command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime --profile Linux{{ fname }}-profilex64 imageinfo chdir={{ dst_path }}/capture/{{ fname }}"
-  command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime --profile {{ fname }}-profile imageinfo chdir={{ dst_path }}/capture/{{ fname }}"
-  changed_when: false
-  register: checkprofile
-  failed_when: "'Invalid profile' in checkprofile.stderr"
-  ignore_errors: true
-- debug: var=checkprofile
+- block:
+    - debug: var=ansible_kernel
+    - name: recreate volatility profile archive
+    #  command: "zip {{ dst_path }}/{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }} creates={{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip chdir={{ bin_path }}"
+      command: "zip {{ bin_path }}/volatility/plugins/overlays/linux//{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }} creates={{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip chdir={{ bin_path }}"
+
+    - name: check profile is valid
+      #command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime --profile Linux{{ fname }}-profilex64 imageinfo chdir={{ dst_path }}/capture/{{ fname }}"
+      command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime --profile {{ fname }}-profile imageinfo chdir={{ dst_path }}/capture/{{ fname }}"
+      changed_when: false
+      register: checkprofile
+      failed_when: "'Invalid profile' in checkprofile.stderr"
+      ignore_errors: true
+    - debug: var=checkprofile
+  when: not (ansible_virtualization_type is defined and (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker"))
 
 - debug: var=lmgout.stdout_lines
   when: lmgout is defined and lmgout.rc != 0
