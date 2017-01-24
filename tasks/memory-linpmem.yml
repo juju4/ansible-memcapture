@@ -25,9 +25,15 @@
   file: "path={{ linpmem_bin }} mode=0700"
 - stat: path="{{ linpmem_capture }}"
   register: memcapture2
+
 - name: memory capture (linpmem)
   command: "{{ linpmem_bin }} -o {{ linpmem_capture }} chdir={{ bin_path }}"
   become: yes
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
   ignore_errors: true
+
+- name: retrieve output hash
+  stat: path="{{ linpmem_capture }}" checksum_algorithm=sha256
+  register: outputstat
+- debug: var=outputstat.stat.checksum
 

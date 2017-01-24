@@ -10,7 +10,7 @@
   win_get_url: url="{{ memcapture_winpmem_url }}"
     dest="{{ winpmem_bin }}"
     mode=0400
-  when: not winpmem.stat.exists and (do_download is defined and do_download)
+  when: not winpmem.stat.exists and memcapture_download
 
 - win_stat: path="{{ winpmem_capture }}"
   register: memcapture2
@@ -19,6 +19,11 @@
 - name: Do memory capture (winpmem)
   raw: "{{ winpmem_bin }} -o {{ winpmem_capture }}"
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
+
+- name: retrieve output hash
+  stat: path="{{ winpmem_capture }}"
+  register: outputstat
+- debug: var=outputstat.stat.checksum
 
 ## https://docs.google.com/presentation/d/1savcvqRcMXpRyVrybWvbHGbJTgjInZcwLB5VokJdKa8/edit#slide=id.g26dcd0ccb_030
 #"c:\Program Files\Rekall\winpmem_1.6.0.exe" -e - | c:\Users\mic\Desktop\ncat.exe 172.16.21.93 8001  --ssl

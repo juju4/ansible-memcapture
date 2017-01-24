@@ -63,4 +63,9 @@
   become: yes
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
 
+- name: retrieve output hash
+  stat: path="{{ dst_path }}/{{ prefix }}-memory-fmem.img" checksum_algorithm=sha256
+  register: outputstat
+- debug: var=outputstat.stat.checksum
+
 

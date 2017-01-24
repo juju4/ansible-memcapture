@@ -71,6 +71,7 @@
   git:
     repo=https://github.com/halpomeranz/lmg
     dest={{ bin_path }}/lmg
+    update=no
   when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download)
 - name: CPU included in KVER
   replace: dest="{{ bin_path }}/lmg/lmg" regexp='LIMEMOD=\$LIMEDIR/lime-\$KVER-\$CPU.ko' replace='LIMEMOD=$LIMEDIR/lime-$KVER.ko' backup=yes
@@ -93,6 +94,13 @@
   when: not dwarf.stat.exists and (memcapture_download is defined and memcapture_download)
   ignore_errors: true
 
+- name: update module.dwarf build path in lmg
+  replace:
+    dest: "{{ bin_path }}/lmg/lmg"
+    regexp: 'cd \$VOLDIR$'
+    replace: 'cd $VOLDIR/tools/linux'
+    backup: yes
+
 - stat: path={{ dst_path }}/lmg/capture
   register: memcapture
 - name: Take memory capture (lmg/lime)
@@ -100,10 +108,39 @@
   command: "bash lmg -y -d {{ dst_path }} -B {{ bin_path }}/LiME chdir={{ bin_path }}/lmg"
   environment:
     TARGETDIR: "{{ dst_path }}"
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ bin_path }}/lmg/dwarfdump"
   become: yes
   when: not memcapture.stat.exists and (memcapture_capture is defined and memcapture_capture)
   ignore_errors: true
   register: lmgout
+
+- debug: var=ansible_kernel
+- name: recreate volatility profile archive
+#  command: "zip {{ dst_path }}/{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }} creates={{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip chdir={{ bin_path }}"
+  command: "zip {{ bin_path }}/volatility/plugins/overlays/linux//{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }} creates={{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip chdir={{ bin_path }}"
+
+## https://github.com/volatilityfoundation/volatility/wiki/Linux
+- name: retrieve lmg output dir
+  shell: "ls -At {{ dst_path }}/capture/ | head -1"
+  changed_when: false
+  register: lscapture
+- set_fact:
+#    fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
+    fname: "{{ lscapture.stdout }}"
+
+- name: retrieve output hash
+  stat: path="{{ dst_path }}/capture/{{ fname }}/{{ fname }}-memory.lime" checksum_algorithm=sha256
+  register: outputstat
+- debug: var=outputstat.stat.checksum
+
+- name: check profile is valid
+  #command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime --profile Linux{{ fname }}-profilex64 imageinfo chdir={{ dst_path }}/capture/{{ fname }}"
+  command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime --profile {{ fname }}-profile imageinfo chdir={{ dst_path }}/capture/{{ fname }}"
+  changed_when: false
+  register: checkprofile
+  failed_when: "'Invalid profile' in checkprofile.stderr"
+  ignore_errors: true
+- debug: var=checkprofile
 
 - debug: var=lmgout.stdout_lines
   when: lmgout is defined and lmgout.rc != 0

@@ -3,26 +3,97 @@
 - set_fact:
     osxpmem_archive: "{{ bin_path }}/{{ memcapture_osxpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
 - set_fact:
-    osxpmem_bin: "{{ osxpmem_archive | regex_replace('.zip$', '') }}"
-    osxpmem_capture: "{{ dst_path }}/{{ prefix }}-memory.{{ memcapture_linpmem_ext }}"
+    osxpmem_bin: "{{ bin_path }}/osxpmem.app/osxpmem"
+    osxpmem_capture: "{{ dst_path }}/{{ prefix }}-memory.{{ memcapture_osxpmem_ext }}"
 
 - stat: path={{ osxpmem_archive }}
   register: osxpmem
 - name: Osxpmem download
-  get_url: url="{{ memcapture_osxpmem_url }}"
-    dest="{{ osxpmem_archive }}"
-    mode=0400
-  when: not osxpmem.stat.exists and (do_download is defined and do_download)
+  get_url:
+    url: "{{ memcapture_osxpmem_url }}"
+    dest: "{{ osxpmem_archive }}"
+    mode: 0444
+#    checksum: "{{ memcapture_osxpmem_hash }}"
+  when: not osxpmem.stat.exists and memcapture_download
 
-- stat: path={{ osxpmem_bin }}
-  register: bin
-- command: extract osxpmem
-  unarchive: "src={{ dst_path }}/{{ osxpmem_archive }} dest={{ osxpmem_bin }} mode=0700"
-  when: not bin.stat.exists
+- debug: var=osxpmem_bin
+- name: extract osxpmem
+## FIXME! FAILED! => {"changed": false, "failed": true, "msg": "Unable to find '/tmp/ir-bin/osxpmem-2.1.post4.zip' in expected paths."}
+#  unarchive:
+#    src: "{{ osxpmem_archive }}"
+#    dest: "{{ bin_path }}"
+#    mode: "0700"
+#    creates: "{{ osxpmem_bin }}"
+  command: "unzip {{ osxpmem_archive }} chdir={{ bin_path }} creates={{ osxpmem_bin }}"
 
-- stat: path={{ osxpmem_capture }}
-  register: memcapture2
-- name: do memory capture (osxpmem)
-  command: "{{ osxpmem_bin }} -o {{ osxpmem_capture }}"
-  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
+- debug: var=harden_darwin_santa_mode
+- block:
+    - name: ensure config set to monitor mode
+      osx_defaults: domain=/var/db/santa/config.plist key=ClientMode value='MONITOR'
+  when: (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
+
+- block:
+    - name: do memory capture (osxpmem)
+      command: "{{ osxpmem_bin }} --format {{ memcapture_osxpmem_ext | default('map') }} -o {{ osxpmem_capture }} creates={{ osxpmem_capture }}"
+      when: (memcapture_capture is defined and memcapture_capture)
+
+    ## Note: you could recover also /private/var/vm/{sleepimage,swapfile} if not encrypted (sysctl vm.swapusage)
+    ## FIXME! install/run rekall in live mode to check that we have a profile? rekall -f /dev/pmem imageinfo
+    ##      from volatility, require Apple Kernel Developer Kit which is not installed by default...
+    ##      https://github.com/volatilityfoundation/volatility/issues/349
+    - name: check if Kernel Debug Kit present
+      stat: path=/Library/Developer/KDKs
+      register: kdk
+    - block:
+        - name: retrieve KDK latest dir
+          shell: "ls -At /Library/Developer/KDKs/ | head -1"
+          register: ls
+          ignore_errors: true
+          changed_when: false
+        - set_fact:
+            kdk_v: "{{ ls.stdout | regex_replace('^KDK_', '') | regex_replace('.kdk$', '') }}"
+        - name: retrieve volatility convert.py
+          get_url:
+            url: "https://raw.githubusercontent.com/volatilityfoundation/volatility/master/tools/mac/convert.py"
+            dest: "{{ bin_path }}"
+            mode: '0755'
+            checksum: 'sha256:e1125cc2dd613252066dac6af125956f2c03f161c20a25d5355d70d07058bbe0'
+        - name: create current macos volatility profile
+          shell: "{{ item.c }} creates={{ item.n }}"
+          with_items:
+            - { c: "dwarfdump -arch x86_64 -i /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel.dSYM > {{ dst_path }}/{{ kdk_v }}.dwarfdump", n: "{{ dst_path }}/{{ kdk_v }}.dwarfdump" }
+            - { c: "dsymutil -s -arch x86_64 /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel > {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil", n: "{{ dst_path }}/{{ kdk_v }}.symbol.dsymutil" }
+            - { c: "python {{ bin_path }}/convert.py {{ dst_path }}/{{ kdk_v }}.dwarfdump {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump", n: "{{ dst_path }}/converted-{{ kdk_v }}.dwarfdump" }
+            - { c: "python {{ bin_path }}/convert.py {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump > {{ dst_path }}/{{ kdk_v }}.vtypes", n: "{{ dst_path }}/{{ kdk_v }}.vtypes" }
+            - { c: "zip {{ dst_path }}/{{ kdk_v }}.zip {{ dst_path }}/{{ kdk_v }}.vtypes {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil", n: "{{ dst_path }}/{{ kdk_v }}.zip" }
+
+        - name: Volatility git clone
+          git:
+            repo=https://github.com/volatilityfoundation/volatility
+            dest={{ bin_path }}/volatility
+            update=no
+        - name: check profile is valid
+          #command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ dst_path }}/{{ prefix }}-memory.raw --profile {{ kdk_v }} imageinfo chdir={{ dst_path }}"
+          command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ dst_path }}/{{ prefix }}-memory.raw --profile Mac{{ kdk_v }}x64 imageinfo chdir={{ dst_path }}"
+          changed_when: false
+          register: checkprofile
+          failed_when: "'Invalid profile' in checkprofile.stderr"
+          ignore_errors: true
+          when: memcapture_osxpmem_ext == 'raw'
+        - debug: var=checkprofile
+        ## to validate with rekall
+        #rekall convert_profile vol-profile.zip rekall-profile.json
+        #rekall --profile rekall-profile.json -f mem.aff4 psaux
+
+      when: kdk.stat.exists
+
+  always:
+    - name: ensure config set to lockdown mode
+      osx_defaults: domain=/var/db/santa/config.plist key=ClientMode value={{ harden_darwin_santa_mode }}
+      when: (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
+
+- name: retrieve output hash
+  stat: path="{{ osxpmem_capture }}" checksum_algorithm=sha256
+  register: outputstat
+- debug: var=outputstat.stat.checksum
 

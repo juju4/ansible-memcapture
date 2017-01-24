@@ -2,7 +2,7 @@
 # Memory capture ansible role
 
 A simple ansible role to install and execute live memory capture tools.
-Rekall pmem suite https://github.com/google/rekall/releases
+Rekall pmem suite (linux/macos/win) https://github.com/google/rekall/releases
 Linux Lmg https://github.com/halpomeranz/lmg
 Linux Fmem http://hysteria.sk/~niekt0/foriana/fmem_current.tgz
 
@@ -12,6 +12,7 @@ Linux Fmem http://hysteria.sk/~niekt0/foriana/fmem_current.tgz
 It was tested on the following versions:
  * 1.9
  * 2.0
+ * 2.2
 
 ### Operating systems
 
@@ -26,11 +27,19 @@ For example
 ```
 - host: myhost
   roles:
-    - memcapture
+    - juju4.memcapture
 ```
 
 you probably want to review variables
 
+Example of execution
+```
+$ time ansible-playbook -i inventory -e TARGETIP=myhost -e ROLE=memcapture -e memcapture_capture=true -e memcapture_pull=true -e dst_mount=/opt/tmp/cases -e bin_path=/opt/tmp/ir-bin roles/run_role.yml
+```
+
+Volatility profile is generated in the following cases:
+* lmg
+* osxpmem, only if Apple Kernel Debug Kit is installed (not default)
 
 ## Variables
 
@@ -42,9 +51,9 @@ dst_path: "{{ dst_mount }}/{{ prefix }}-incidentreport"
 ## do we want to install new packages? might be required if building kernel module for example
 ## allow ansible to download stuff which does not exist, eventually build it?
 ## more impacting the evidence but sometimes have no choice...
-do_download: true
-do_build: true
-do_install: true
+memcapture_download: true
+memcapture_build: true
+memcapture_install: true
 
 bin_path: "/tmp/ir-bin"
 ```
@@ -53,13 +62,14 @@ bin_path: "/tmp/ir-bin"
   download/build/install is enabled, the role will add everything necessary.
   Of course, from a forensic perspective, better if everything is setup either
   before locally (but can be altered) or a network read-only share
+  Ensure mount path has not noexec mount flags, for example /tmp.
 * dst_path: where to store the output. again, came be local or remote.
 
 ## Continuous integration
 
 you can test this role with test kitchen or travis.
 ```
-$ cd /path/to/roles/myrole
+$ cd /path/to/roles/juju4.memcapture
 $ kitchen verify
 $ kitchen login
 ```
