@@ -28,6 +28,8 @@
   become: yes
   when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 
+- include: gcc.yml
+
 - name: check installed kernels
   command: "ls /usr/src/kernels/"
   changed_when: false
@@ -132,7 +134,7 @@
     - debug: var=ansible_kernel
     - name: recreate volatility profile archive
     #  command: "zip {{ dst_path }}/{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }} creates={{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip chdir={{ bin_path }}"
-      command: "zip {{ bin_path }}/volatility/plugins/overlays/linux//{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }} creates={{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip chdir={{ bin_path }}"
+      command: "zip {{ bin_path }}/volatility/volatility/plugins/overlays/linux//{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }} creates={{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip chdir={{ bin_path }}"
 
     - name: check profile is valid
       #command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime --profile Linux{{ fname }}-profilex64 imageinfo chdir={{ dst_path }}/capture/{{ fname }}"

@@ -1,5 +1,6 @@
 ---
 ## for older systems, use fmem
+## FIXME! rpm packages from https://forensics.cert.org/
 - fail: msg="Missing memory size! required for fmem."
   when: memory_size is undefined 
 
