@@ -147,6 +147,6 @@
   when: not (ansible_virtualization_type is defined and (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker")) and not (ansible_distribution_major_version == "6" and ansible_virtualization_type == "kvm")
 
 - debug: var=lmgout.stdout_lines
-  when: lmgout is defined and lmgout.rc != 0
+  when: lmgout is defined and lmgout.rc is defined and lmgout.rc != 0
 
 
