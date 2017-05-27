@@ -29,7 +29,11 @@
 - debug: var=harden_darwin_santa_mode
 - block:
     - name: ensure config set to monitor mode
-      osx_defaults: domain=/var/db/santa/config.plist key=ClientMode value='MONITOR'
+      osx_defaults:
+        domain: /var/db/santa/config.plist
+        key: ClientMode
+        value: 0
+        type: int
   when: (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
 
 - block:
@@ -89,7 +93,11 @@
 
   always:
     - name: ensure config set to lockdown mode
-      osx_defaults: domain=/var/db/santa/config.plist key=ClientMode value={{ harden_darwin_santa_mode }}
+      osx_defaults:
+        domain: /var/db/santa/config.plist
+        key: ClientMode
+        value: "{{ harden_darwin_santa_mode }}"
+        type: int
       when: (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
 
 - name: retrieve output hash
