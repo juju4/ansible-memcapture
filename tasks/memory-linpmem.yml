@@ -7,6 +7,14 @@
     linpmem_bin: "{{ linpmem_archive | regex_replace('.(gz|tgz)$', '') }}"
     linpmem_capture: "{{ dst_path }}/{{ prefix }}-memory-linpmem.{{ memcapture_linpmem_ext }}"
 
+- name: Ensure ansible dependencies are present
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - libselinux-python
+  when: memcapture_install and ansible_selinux is defined and ansible_selinux != False and ansible_selinux.status == 'enabled'
+
 - stat: path="{{ linpmem_bin }}"
   register: linpmem
 - name: Linpmem download
