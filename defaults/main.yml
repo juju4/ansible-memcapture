@@ -41,12 +41,18 @@ memcapture_use_linpmem: true
 memcapture_use_fmem: true
 memcapture_use_lmg: true
 
+#memcapture_winpmem_v: 3.0.rc1
+#memcapture_winpmem_url: https://github.com/Velocidex/c-aff4/releases/download/1.0.rc2/winpmem_3.0.rc1.exe
+#memcapture_winpmem_ext: aff4
 #memcapture_winpmem_v: 2.1.post4
 #memcapture_winpmem_url: https://github.com/google/rekall/releases/download/v1.5.1/winpmem-2.1.post4.exe
 #memcapture_winpmem_ext: aff4
 memcapture_winpmem_v: 1.6.2
 memcapture_winpmem_url: https://github.com/google/rekall/releases/download/v1.3.1/winpmem_1.6.2.exe
 memcapture_winpmem_ext: img
+#memcapture_linpmem_v: 3.0rc2
+#memcapture_linpmem_url: https://github.com/Velocidex/c-aff4/releases/download/1.0.rc2/linpmem_3.0rc2.bin
+#memcapture_linpmem_ext: aff4
 memcapture_linpmem_v: 2.1.post4
 memcapture_linpmem_url: https://github.com/google/rekall/releases/download/v1.5.1/linpmem-2.1.post4
 memcapture_linpmem_ext: aff4
