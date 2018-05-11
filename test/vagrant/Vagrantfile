@@ -16,7 +16,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
        ansible.become = true
        ansible.extra_vars = { ansible_ssh_user: 'vagrant', memory_size: 536870912, memcapture_capture: true }
        ansible.groups = {
-          "myrole" => ["ubuntu12_32", "ubuntu14_64", "debian76_64", "centos7_64", "centos6_32", "centos5_64", "centos5_32", "centos5_32b" ],
+          "myrole" => ["ubuntu12_32", "ubuntu14_64", "debian76_64", "centos7_64", "centos6_32", "centos5_64", "centos5_32", "centos5_32b", "centos7", "centos6" ],
        }
     end
 
@@ -28,6 +28,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
      end
      config.vm.define "debian76_64" do |debian76_64|
        debian76_64.vm.box = "chef/debian-7.6"
+     end
+     config.vm.define "centos7" do |cfg|
+       cfg.vm.box = "centos/7"
+     end
+     config.vm.define "centos6" do |cfg|
+       cfg.vm.box = "centos/6"
      end
      config.vm.define "centos7_64" do |centos7_64|
        centos7_64.vm.box = "puppetlabs/centos-7.0-64-puppet-enterprise"
