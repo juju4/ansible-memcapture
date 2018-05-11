@@ -14,10 +14,11 @@ It was tested on the following versions:
  * 1.9
  * 2.0
  * 2.2
+ * 2.5
 
 ### Operating systems
 
-Tested initially with vagrant on Ubuntu 14.04
+Tested on Ubuntu 14.04, 16.04 and 18.04, Centos 6 and 7.
 Verified with kitchen
 
 ## Example Playbook
@@ -73,6 +74,7 @@ you can test this role with test kitchen or travis.
 $ cd /path/to/roles/juju4.memcapture
 $ kitchen verify
 $ kitchen login
+$ KITCHEN_YAML=".kitchen.vagrant.yml" kitchen verify
 ```
 
 Known bugs

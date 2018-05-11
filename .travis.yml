@@ -10,7 +10,11 @@ env:
   - distribution: centos
     version: 7
     init: /usr/lib/systemd/systemd
-    run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    run_opts: "'--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro'"
+  - distribution: ubuntu
+    version: 18.04
+    init: /lib/systemd/systemd
+    run_opts: ""
   - distribution: ubuntu
     version: 16.04
     init: /lib/systemd/systemd
@@ -69,9 +73,9 @@ script:
     || (echo 'Idempotence test: fail' && cat /tmp/idempotency.log && exit 1)
 #  - 'sudo docker exec "$(cat ${container_id})" cat /tmp/idempotency.log'
 
+after_script:
   # Clean up
   - 'sudo docker stop "$(cat ${container_id})"'
 
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
-
