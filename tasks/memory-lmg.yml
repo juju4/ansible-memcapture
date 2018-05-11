@@ -2,13 +2,7 @@
 
 - name: apt | Extra packages install for lmg
   apt: name={{item}} state=present
-  with_items:
-    - git
-    - zip
-    - make
-    - gcc
-    - linux-generic
-    - linux-headers-{{ ansible_kernel }}
+  with_items: "{{ memory_lmg_deps }}"
   become: yes
   when: (memcapture_install is defined and memcapture_install) and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
 ## Note: seems distribution are not keeping their linux-headers for all base kernel...
@@ -17,16 +11,7 @@
 
 - name: yum | Extra packages install for lmg
   yum: name={{item}} state=present
-  with_items:
-    - git
-    - zip
-    - make
-    - gcc
-    - gcc-c++
-    - kernel-devel
-    - kernel-headers
-    - nss
-    - python-pycrypto
+  with_items: "{{ memory_lmg_deps }}"
   become: yes
   when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 
