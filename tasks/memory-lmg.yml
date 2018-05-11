@@ -25,6 +25,8 @@
     - gcc-c++
     - kernel-devel
     - kernel-headers
+    - nss
+    - python-pycrypto
   become: yes
   when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 
@@ -57,6 +59,34 @@
     repo=https://github.com/504ensicsLabs/LiME.git
     dest={{ bin_path }}/LiME
   when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download)
+  ignore_errors: true
+  register: clonelime
+
+# if https://help.github.com/articles/https-cloning-errors/
+- block:
+    - name: Lime fetch - alternate
+      get_url:
+        url: https://github.com/504ensicsLabs/LiME/archive/master.zip
+        dest: "{{ bin_path }}/LiME.zip"
+        mode: '0600'
+    - name: Ensure unzip is present
+      package:
+        name: unzip
+        state: present
+    - name: unarchive LiME
+      command: "unzip -d {{ bin_path }} {{ bin_path }}/LiME.zip"
+      args:
+        creates: "{{ bin_path }}/LiME-master/src/Makefile"
+#      unarchive:
+#        src: "{{ bin_path }}/LiME.zip"
+#        dest: "{{ bin_path }}"
+#        creates: "{{ bin_path }}/LiME/src/Makefile"
+    - name: symlink usual path
+      file:
+        src: "{{ bin_path }}/LiME-master"
+        dest: "{{ bin_path }}/LiME"
+        state: link
+  when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download) and clonelime.failed
 
 - stat: path={{ bin_path }}/volatility
   register: gitvol
@@ -65,6 +95,30 @@
     repo=https://github.com/volatilityfoundation/volatility
     dest={{ bin_path }}/volatility
   when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download)
+  ignore_errors: true
+  register: clonevol
+
+# if https://help.github.com/articles/https-cloning-errors/
+- block:
+    - name: Volatility fetch - alternate
+      get_url:
+        url: https://downloads.volatilityfoundation.org/releases/2.6/volatility-2.6.zip
+        dest: "{{ bin_path }}/volatility-2.6.zip"
+        mode: '0600'
+    - name: Ensure unzip is present
+      package:
+        name: unzip
+        state: present
+    - name: unarchive Volatility
+      command: "unzip -d {{ bin_path }} {{ bin_path }}/volatility-2.6.zip"
+      args:
+        creates: "{{ bin_path }}/volatility-master/setup.py"
+    - name: symlink usual path
+      file:
+        src: "{{ bin_path }}/volatility-master"
+        dest: "{{ bin_path }}/volatility"
+        state: link
+  when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download) and clonevol.failed
 
 - stat: path={{ bin_path }}/lmg
   register: gitlmg
@@ -75,6 +129,31 @@
     dest={{ bin_path }}/lmg
     update=no
   when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download)
+  ignore_errors: true
+  register: clonelmg
+
+# if https://help.github.com/articles/https-cloning-errors/
+- block:
+    - name: LMG fetch - alternate
+      get_url:
+        url: https://github.com/halpomeranz/lmg/archive/master.zip
+        dest: "{{ bin_path }}/LMG.zip"
+        mode: '0600'
+    - name: Ensure unzip is present
+      package:
+        name: unzip
+        state: present
+    - name: unarchive LMG
+      command: "unzip -d {{ bin_path }} {{ bin_path }}/LMG.zip"
+      args:
+        creates: "{{ bin_path }}/lmg-master/src/Makefile"
+    - name: symlink usual path
+      file:
+        src: "{{ bin_path }}/lmg-master"
+        dest: "{{ bin_path }}/lmg"
+        state: link
+  when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download) and clonelmg.failed
+
 - name: CPU included in KVER
   replace: dest="{{ bin_path }}/lmg/lmg" regexp='LIMEMOD=\$LIMEDIR/lime-\$KVER-\$CPU.ko' replace='LIMEMOD=$LIMEDIR/lime-$KVER.ko' backup=yes
   when: (memcapture_install is defined and memcapture_install)
@@ -107,7 +186,7 @@
   register: memcapture
 - name: Take memory capture (lmg/lime)
 #  command: "bash lmg -y chdir={{ bin_path }}/lmg"
-  command: "bash lmg -y -d {{ dst_path }} -B {{ bin_path }}/LiME chdir={{ bin_path }}/lmg"
+  command: "bash lmg -y -d {{ dst_path }} -B {{ bin_path }}/LiME/src chdir={{ bin_path }}/lmg"
   environment:
     TARGETDIR: "{{ dst_path }}"
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ bin_path }}/lmg/dwarfdump"
