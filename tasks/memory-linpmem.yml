@@ -13,7 +13,7 @@
     state: present
   with_items:
     - libselinux-python
-  when: memcapture_install
+  when: memcapture_install and ansible_os_family == "RedHat"
 #  when: memcapture_install and ansible_selinux is defined and ansible_selinux != False and ansible_selinux.status == 'enabled'
 
 - stat: path="{{ linpmem_bin }}"
