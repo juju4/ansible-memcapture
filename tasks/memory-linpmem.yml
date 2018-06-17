@@ -36,7 +36,10 @@
   register: memcapture2
 
 - name: memory capture (linpmem)
-  command: "{{ linpmem_bin }} -o {{ linpmem_capture }} chdir={{ bin_path }}"
+  command: "{{ linpmem_bin }} -o {{ linpmem_capture }}"
+  #command: "{{ linpmem_bin }} -dd -o {{ linpmem_capture }}"
+  args:
+    chdir: "{{ bin_path }}"
   become: yes
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
   ignore_errors: true
@@ -46,3 +49,12 @@
   register: outputstat
 - debug: var=outputstat.stat.checksum
 
+- name: Linpmem | get debug info
+  shell: "{{ item.c }}"
+  args:
+    creates: "{{ item.t }}"
+  with_items:
+    - { c: "cat /proc/meminfo > {{ dst_path }}/{{ prefix }}-proc-meminfo", t: "{{ dst_path }}/{{ prefix }}-proc-meminfo" }
+    - { c: "cat /proc/iomem > {{ dst_path }}/{{ prefix }}-proc-iomem", t: "{{ dst_path }}/{{ prefix }}-proc-iomem" }
+    - { c: "cat /proc/mtrr > {{ dst_path }}/{{ prefix }}-proc-mtrr", t: "{{ dst_path }}/{{ prefix }}-proc-mtrr" }
+    - { c: "readelf -a /proc/kcore > {{ dst_path }}/{{ prefix }}-proc-kcore", t: "{{ dst_path }}/{{ prefix }}-proc-kcore" }
