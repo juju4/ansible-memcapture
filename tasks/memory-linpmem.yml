@@ -58,3 +58,4 @@
     - { c: "cat /proc/iomem > {{ dst_path }}/{{ prefix }}-proc-iomem", t: "{{ dst_path }}/{{ prefix }}-proc-iomem" }
     - { c: "cat /proc/mtrr > {{ dst_path }}/{{ prefix }}-proc-mtrr", t: "{{ dst_path }}/{{ prefix }}-proc-mtrr" }
     - { c: "readelf -a /proc/kcore > {{ dst_path }}/{{ prefix }}-proc-kcore", t: "{{ dst_path }}/{{ prefix }}-proc-kcore" }
+  ignore_errors: true
