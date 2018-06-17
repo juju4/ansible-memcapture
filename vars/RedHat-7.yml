@@ -10,3 +10,4 @@ memory_lmg_deps:
     - kernel-headers
     - nss
     - python-crypto
+    - binutils

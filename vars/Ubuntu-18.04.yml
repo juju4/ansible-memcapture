@@ -7,5 +7,6 @@ memory_lmg_deps:
     - gcc
     - linux-generic
     - linux-headers-{{ ansible_kernel }}
+    - binutils
 
 memcapture_cc: gcc-7
