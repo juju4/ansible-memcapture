@@ -15,6 +15,16 @@
 - win_stat: path="{{ winpmem_capture }}"
   register: memcapture2
 
+# https://df-stream.com/2017/08/memory-acquisition-and-virtual-secure/
+- name: check if Virtual Secure Mode is enabled
+  win_shell: Get-Process 'Secure System' -ErrorAction SilentlyContinue
+  register: vsm
+
+- debug: var=vsm
+
+- name: Wait user confirmation before starting memory capture
+  pause:
+
 ## FIXME! through powershell ? (ansible 'script:')
 - name: Do memory capture (winpmem)
   raw: "{{ winpmem_bin }} -o {{ winpmem_capture }}"
