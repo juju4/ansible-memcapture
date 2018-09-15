@@ -67,16 +67,23 @@
     - debug: var=lsout2.stdout_lines
   when: ansible_system != 'Linux' or ansible_distribution == 'Alpine'
 
-## Note: too memory consuming to transfer with python/base64
-#- debug: var=memcapture_pull
-#- block:
+- debug: var=memcapture_pull
+- block:
 #    - name: archive output content
-### v2.3
-##      archive: "src={{ dst_path }} dest={{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
+## v2.3
+#      archive: "src={{ dst_path }} dest={{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
 #      command: "tar czf {{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz {{ dst_path }}/ creates={{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
-#    - name: retrieve output dir to orchestrator
+## 2.6+ for net_get
+    - name: retrieve output dir to orchestrator
+      net_get:
+        src: "{{ item }}"
+        dest: "{{ memcapture_pulldir }}/"
+        protocol: sftp
+## Note: too memory consuming to transfer with python/base64
 #      fetch: "src={{ item }} dest={{ memcapture_pulldir }}/"
 #      with_items:
 #        - "{{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
-#  when: memcapture_pull is defined and memcapture_pull
+      with_fileglob:
+        - "{{ dst_path }}/*"
+  when: memcapture_pull is defined and memcapture_pull
 
