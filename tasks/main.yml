@@ -85,5 +85,6 @@
 #        - "{{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
       with_fileglob:
         - "{{ dst_path }}/*"
+      when: ansible_version.full is version_compare('2.6', '>=')
   when: memcapture_pull is defined and memcapture_pull
 
