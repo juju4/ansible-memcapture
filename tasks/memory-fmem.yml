@@ -5,13 +5,9 @@
   when: memory_size is undefined
 
 - name: Debian | Extra packages install
-  apt: name={{ item }} state=present
-  with_items:
-#    - zip
-    - make
-    - gcc
-    - linux-generic
-    - linux-headers-{{ ansible_kernel }}
+  apt:
+    name: ['make', 'gcc', 'linux-generic', 'linux-headers-{{ ansible_kernel }}']
+    state: present
   become: yes
   when: memcapture_install is defined and memcapture_install
   register: pkg_result
