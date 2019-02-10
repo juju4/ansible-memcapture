@@ -223,7 +223,8 @@
   shell: "ls -At {{ dst_path }}/capture/ | head -1"
   changed_when: false
   register: lscapture
-- set_fact:
+- name: Set fact output directory name
+  set_fact:
 #    fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
     fname: "{{ lscapture.stdout }}"
 
