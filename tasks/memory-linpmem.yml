@@ -23,12 +23,14 @@
 #    ansible_selinux is defined and ansible_selinux and ansible_selinux.status == 'enabled'
 
 - name: Check if linpmem archive is present
-  stat: path="{{ linpmem_bin }}"
+  stat:
+    path: "{{ linpmem_bin }}"
   register: linpmem
 - name: Linpmem download
-  get_url: url="{{ memcapture_linpmem_url }}"
-    dest="{{ linpmem_archive }}"
-    mode=0400
+  get_url:
+    url: "{{ memcapture_linpmem_url }}"
+    dest: "{{ linpmem_archive }}"
+    mode: '0400'
   when: not linpmem.stat.exists and (memcapture_download is defined and memcapture_download)
 
 - name: Extract linpmem

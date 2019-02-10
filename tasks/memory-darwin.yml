@@ -8,7 +8,8 @@
     osxpmem_bin: "{{ bin_path }}/osxpmem.app/osxpmem"
     osxpmem_capture: "{{ dst_path }}/{{ prefix }}-memory.{{ memcapture_osxpmem_ext }}"
 
-- stat: path={{ osxpmem_archive }}
+- name: Check if osxpmem archive is present
+  stat: path={{ osxpmem_archive }}
   register: osxpmem
 - name: Osxpmem download
   get_url:

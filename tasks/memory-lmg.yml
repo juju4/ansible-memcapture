@@ -76,14 +76,13 @@
       package:
         name: unzip
         state: present
+      register: pkg_result
+      until: pkg_result is success
     - name: unarchive LiME
-      command: "unzip -d {{ bin_path }} {{ bin_path }}/LiME.zip"
-      args:
-        creates: "{{ bin_path }}/LiME-master/src/Makefile"
-#      unarchive:
-#        src: "{{ bin_path }}/LiME.zip"
-#        dest: "{{ bin_path }}"
-#        creates: "{{ bin_path }}/LiME/src/Makefile"
+      unarchive:
+        src: "{{ bin_path }}/LiME.zip"
+        dest: "{{ bin_path }}"
+        creates: "{{ bin_path }}/LiME/src/Makefile"
     - name: symlink usual path
       file:
         src: "{{ bin_path }}/LiME-master"
@@ -91,7 +90,8 @@
         state: link
   when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download) and clonelime.failed
 
-- stat: path={{ bin_path }}/volatility
+- name: Check if volatility source is present
+  stat: path={{ bin_path }}/volatility
   register: gitvol
 - name: Volatility git clone
   git:
@@ -113,9 +113,12 @@
       package:
         name: unzip
         state: present
+      register: pkg_result
+      until: pkg_result is success
     - name: unarchive Volatility
-      command: "unzip -d {{ bin_path }} {{ bin_path }}/volatility-2.6.zip"
-      args:
+      unarchive:
+        src: "{{ bin_path }}/volatility-2.6.zip"
+        dest: "{{ bin_path }}"
         creates: "{{ bin_path }}/volatility-master/setup.py"
     - name: symlink usual path
       file:
@@ -124,7 +127,8 @@
         state: link
   when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download) and clonevol.failed
 
-- stat: path={{ bin_path }}/lmg
+- name: Check if LMG directory is present
+  stat: path={{ bin_path }}/lmg
   register: gitlmg
 #    repo=https://github.com/juju4/lmg
 - name: lmg git clone
@@ -148,9 +152,12 @@
       package:
         name: unzip
         state: present
+      register: pkg_result
+      until: pkg_result is success
     - name: unarchive LMG
-      command: "unzip -d {{ bin_path }} {{ bin_path }}/LMG.zip"
-      args:
+      unarchive:
+        src: "{{ bin_path }}/LMG.zip"
+        dest: "{{ bin_path }}"
         creates: "{{ bin_path }}/lmg-master/src/Makefile"
     - name: symlink usual path
       file:
@@ -174,11 +181,13 @@
     backup: yes
   when: (memcapture_install is defined and memcapture_install)
 
-- command: "ls {{ bin_path }}/lmg"
+- name: Check if dwarfdump present for LMG
+  command: "ls {{ bin_path }}/lmg"
   changed_when: false
   register: lmgdir
 - debug: var=lmgdir
-- stat: path={{ bin_path }}/lmg/dwarfdump/dwarfdump-i686
+- name: Check if dwarfdump-i686 is present
+  stat: path={{ bin_path }}/lmg/dwarfdump/dwarfdump-i686
   register: dwarf
 ## Note: if nfs/samba mount, owner/perms might not be preserved so ignore those errors
 - name: Extract dwarfdump utilities
@@ -195,7 +204,8 @@
     replace: 'cd $VOLDIR/tools/linux'
     backup: yes
 
-- stat: path={{ dst_path }}/lmg/capture
+- name: Check if existing LMG capture
+  stat: path={{ dst_path }}/lmg/capture
   register: memcapture
 - name: Take memory capture (lmg/lime)
 #  command: "bash lmg -y chdir={{ bin_path }}/lmg"

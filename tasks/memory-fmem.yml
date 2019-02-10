@@ -1,7 +1,8 @@
 ---
 ## for older systems, use fmem
 ## FIXME! rpm packages from https://forensics.cert.org/
-- fail: msg="Missing memory size! required for fmem."
+- name: FATAL
+  fail: msg="Missing memory size! required for fmem."
   when: memory_size is undefined
 
 - name: Debian | Extra packages install
@@ -24,9 +25,9 @@
     mode: '0400'
   when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download)
 - name: Extract fmem
-  command: "tar xzf {{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
-  args:
-    chdir: "{{ bin_path }}"
+  unarchive:
+    src: "{{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
+    dest: "{{ bin_path }}"
   when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download)
 
 # change memory size
