@@ -16,6 +16,7 @@
   register: memcapture2
 
 # https://df-stream.com/2017/08/memory-acquisition-and-virtual-secure/
+# http://blog.rekall-forensic.com/2018/09/virtual-secure-mode-and-memory.html
 - name: check if Virtual Secure Mode is enabled
   win_shell: Get-Process 'Secure System' -ErrorAction SilentlyContinue
   register: vsm
