@@ -34,13 +34,17 @@
 
 - debug: var=memcapture_use_linpmem
 - include: memory-linpmem.yml
-  when: ansible_system == 'Linux' and ansible_architecture == 'x86_64' and memcapture_use_linpmem is defined and memcapture_use_linpmem
+  when: >
+    ansible_system == 'Linux' and ansible_architecture == 'x86_64' and
+    memcapture_use_linpmem is defined and memcapture_use_linpmem
   tags:
     - linpmem
 
 ## the next two applies mostly for i386 arch or older system
 - include: memory-fmem.yml
-  when: ansible_system == 'Linux' and ansible_architecture == 'i386' and memcapture_use_fmem is defined and memcapture_use_fmem
+  when: >
+    ansible_system == 'Linux' and ansible_architecture == 'i386' and
+    memcapture_use_fmem is defined and memcapture_use_fmem
   tags:
     - fmem
 
@@ -72,7 +76,10 @@
 #    - name: archive output content
 ## v2.3
 #      archive: "src={{ dst_path }} dest={{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
-#      command: "tar czf {{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz {{ dst_path }}/ creates={{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
+#      command: >
+#        tar czf {{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz {{ dst_path }}/
+#      args:
+#        creates: "{{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
 ## 2.6+ for net_get
     - name: retrieve output dir to orchestrator
       net_get:
@@ -87,4 +94,3 @@
         - "{{ dst_path }}/*"
       when: ansible_version.full is version_compare('2.6', '>=')
   when: memcapture_pull is defined and memcapture_pull
-

@@ -1,18 +1,24 @@
 ---
 
-- set_fact:
+- name: Set fact winpmem_bin...
+  set_fact:
     winpmem_bin: "{{ bin_path }}\\{{ memcapture_winpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
     winpmem_capture: "{{ dst_path }}\\{{ prefix }}-memory.{{ memcapture_winpmem_ext }}"
 
-- win_stat: path="{{ winpmem_bin }}"
+- name: Check if winpmem binary is present
+  win_stat:
+    path: "{{ winpmem_bin }}"
   register: winpmem
 - name: winpmem download
-  win_get_url: url="{{ memcapture_winpmem_url }}"
-    dest="{{ winpmem_bin }}"
-    mode=0400
+  win_get_url:
+    url: "{{ memcapture_winpmem_url }}"
+    dest: "{{ winpmem_bin }}"
+    mode: '0400'
   when: not winpmem.stat.exists and memcapture_download
 
-- win_stat: path="{{ winpmem_capture }}"
+- name: Check if existing winpmem capture
+  win_stat:
+    path: "{{ winpmem_capture }}"
   register: memcapture2
 
 # https://df-stream.com/2017/08/memory-acquisition-and-virtual-secure/
@@ -43,4 +49,3 @@
 ## https://technet.microsoft.com/en-us/sysinternals/bb897438.aspx
 - name: force sync aka write to disk
   raw: "{{ bin_path }}\\sync.exe -r -e"
-

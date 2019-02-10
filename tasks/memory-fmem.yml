@@ -5,7 +5,7 @@
   when: memory_size is undefined
 
 - name: Debian | Extra packages install
-  apt: name={{item}} state=present
+  apt: name={{ item }} state=present
   with_items:
 #    - zip
     - make
@@ -14,23 +14,29 @@
     - linux-headers-{{ ansible_kernel }}
   become: yes
   when: memcapture_install is defined and memcapture_install
+  register: pkg_result
+  until: pkg_result is success
 
-- stat: path="{{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
+- name: Check if fmem archive is present
+  stat:
+    path: "{{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
   register: fmem
 - name: fmem download
-  get_url: url="http://hysteria.cz/niekt0/fmem/fmem_{{ memcapture_fmem_v }}.tgz"
-    dest="{{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
-    mode=0400
+  get_url:
+    url: "http://hysteria.cz/niekt0/fmem/fmem_{{ memcapture_fmem_v }}.tgz"
+    dest: "{{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
+    mode: '0400'
   when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download)
 - name: Extract fmem
-  command: "{{ item }} chdir={{ bin_path }}"
-  with_items:
-    - "tar xzf {{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
+  command: "tar xzf {{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
+  args:
+    chdir: "{{ bin_path }}"
   when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download)
 
 # change memory size
 
-- stat: path={{ dst_path }}/{{ prefix }}-fmem-memory.img
+- name: Check if already a capture file
+  stat: path={{ dst_path }}/{{ prefix }}-fmem-memory.img
   register: memcapture2
 - name: FMEM | procinfo
   shell: "{{ item }}"
@@ -40,7 +46,8 @@
     - "cat /proc/mtrr > {{ dst_path }}/{{ prefix }}-proc-mtrr"
   when: not memcapture2.stat.exists
 
-- stat: path={{ bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem.ko
+- name: Check if fmem.ko exists
+  stat: path={{ bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem.ko
   register: fmemko
 ## fmem.ko is probably kernel dependent, so better rebuild... or prebuilt
 - name: FMEM | memory capture
@@ -51,7 +58,10 @@
 
 ## if multiple pre-compiled fmem
 #- copy: src={{ bin_path }}/fmem_{{ memcapture_fmem_v }}/run.sh dest={{ dst_path }}/run.sh mode=0755
-#- replace: dest={{ dst_path }}/run.sh regexp='fmem.ko' replace='{{ bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem-{{ ansible_kernel }}.ko'
+#- replace:
+#    dest: "{{ dst_path }}/run.sh"
+#    regexp: 'fmem.ko'
+#    replace: '{{ bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem-{{ ansible_kernel }}.ko'
 
 - name: FMEM | memory capture (1)
   command: "./run.sh chdir={{ bin_path }}/fmem_{{ memcapture_fmem_v }}"
@@ -60,7 +70,11 @@
   ignore_errors: true
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
 - name: FMEM | memory capture (2)
-  command: "dd if=/dev/fmem of={{ dst_path }}/{{ prefix }}-memory-fmem.img conv=noerror,sync bs={{ memcapture_memory_bs }} count={{ memcapture_memory_size }} chdir={{ bin_path }}/fmem_{{ memcapture_fmem_v }}"
+  command: >
+    dd if=/dev/fmem of={{ dst_path }}/{{ prefix }}-memory-fmem.img conv=noerror,sync bs={{ memcapture_memory_bs }}
+        count={{ memcapture_memory_size }}
+  args:
+    chdir: "{{ bin_path }}/fmem_{{ memcapture_fmem_v }}"
   become: yes
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
 
@@ -68,5 +82,3 @@
   stat: path="{{ dst_path }}/{{ prefix }}-memory-fmem.img" checksum_algorithm=sha256
   register: outputstat
 - debug: var=outputstat.stat.checksum
-
-

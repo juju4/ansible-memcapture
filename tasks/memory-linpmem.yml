@@ -1,9 +1,11 @@
 ---
 ## how to measure memory impact? ps, /proc/*pid*/status, pmap, smem... http://elinux.org/Runtime_Memory_Measurement
 
-- set_fact:
+- name: Set fact linpmem_archive
+  set_fact:
     linpmem_archive: "{{ bin_path }}/{{ memcapture_linpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
-- set_fact:
+- name: Set fact linpmem_bin...
+  set_fact:
     linpmem_bin: "{{ linpmem_archive | regex_replace('.(gz|tgz)$', '') }}"
     linpmem_capture: "{{ dst_path }}/{{ prefix }}-memory-linpmem.{{ memcapture_linpmem_ext }}"
 
@@ -13,10 +15,15 @@
     state: present
   with_items:
     - libselinux-python
+  register: pkg_result
+  until: pkg_result is success
   when: memcapture_install and ansible_os_family == "RedHat"
-#  when: memcapture_install and ansible_selinux is defined and ansible_selinux != False and ansible_selinux.status == 'enabled'
+#  when: >
+#    memcapture_install and
+#    ansible_selinux is defined and ansible_selinux and ansible_selinux.status == 'enabled'
 
-- stat: path="{{ linpmem_bin }}"
+- name: Check if linpmem archive is present
+  stat: path="{{ linpmem_bin }}"
   register: linpmem
 - name: Linpmem download
   get_url: url="{{ memcapture_linpmem_url }}"
@@ -31,8 +38,12 @@
   when: not linpmem.stat.exists and memcapture_linpmem_url.find('.tgz') != -1
 
 - name: check appropriate permissions
-  file: "path={{ linpmem_bin }} mode=0700"
-- stat: path="{{ linpmem_capture }}"
+  file:
+    path: "{{ linpmem_bin }}"
+    mode: '0700'
+- name: Check if existing linpmem capture
+  stat:
+    path: "{{ linpmem_capture }}"
   register: memcapture2
 
 - name: memory capture (linpmem)
@@ -45,7 +56,9 @@
   ignore_errors: true
 
 - name: retrieve output hash
-  stat: path="{{ linpmem_capture }}" checksum_algorithm=sha256
+  stat:
+    path: "{{ linpmem_capture }}"
+    checksum_algorithm: sha256
   register: outputstat
 - debug: var=outputstat.stat.checksum
 
@@ -54,8 +67,12 @@
   args:
     creates: "{{ item.t }}"
   with_items:
-    - { c: "cat /proc/meminfo > {{ dst_path }}/{{ prefix }}-proc-meminfo", t: "{{ dst_path }}/{{ prefix }}-proc-meminfo" }
+    - { c: "cat /proc/meminfo > {{ dst_path }}/{{ prefix }}-proc-meminfo",
+        t: "{{ dst_path }}/{{ prefix }}-proc-meminfo"
+      }
     - { c: "cat /proc/iomem > {{ dst_path }}/{{ prefix }}-proc-iomem", t: "{{ dst_path }}/{{ prefix }}-proc-iomem" }
     - { c: "cat /proc/mtrr > {{ dst_path }}/{{ prefix }}-proc-mtrr", t: "{{ dst_path }}/{{ prefix }}-proc-mtrr" }
-    - { c: "readelf -a /proc/kcore > {{ dst_path }}/{{ prefix }}-proc-kcore", t: "{{ dst_path }}/{{ prefix }}-proc-kcore" }
+    - { c: "readelf -a /proc/kcore > {{ dst_path }}/{{ prefix }}-proc-kcore",
+        t: "{{ dst_path }}/{{ prefix }}-proc-kcore"
+      }
   ignore_errors: true

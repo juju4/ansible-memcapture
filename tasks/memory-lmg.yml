@@ -1,19 +1,25 @@
 ---
 
 - name: apt | Extra packages install for lmg
-  apt: name={{item}} state=present
-  with_items: "{{ memory_lmg_deps }}"
+  apt: name={{ memory_lmg_deps }} state=present
   become: yes
-  when: (memcapture_install is defined and memcapture_install) and (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+  when: >
+    (memcapture_install is defined and memcapture_install) and
+    (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
 ## Note: seems distribution are not keeping their linux-headers for all base kernel...
-##	Ubuntu12.04 "No package matching 'linux-headers-3.19.0-30-generic' is available"
+##       Ubuntu12.04 "No package matching 'linux-headers-3.19.0-30-generic' is available"
   ignore_errors: true
+  register: pkg_result
+  until: pkg_result is success
 
 - name: yum | Extra packages install for lmg
-  yum: name={{item}} state=present
-  with_items: "{{ memory_lmg_deps }}"
+  yum: name={{ memory_lmg_deps }} state=present
   become: yes
-  when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+  when: >
+    (memcapture_install is defined and memcapture_install) and
+    (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+  register: pkg_result
+  until: pkg_result is success
 
 - include: gcc.yml
 
@@ -21,28 +27,40 @@
   command: "ls /usr/src/kernels/"
   changed_when: false
   register: d1
-  when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+  when: >
+    (memcapture_install is defined and memcapture_install) and
+    (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - name: redhat | check installed kernel-headers rpm
   command: "rpm -qa kernel-headers"
+  args:
+    warn: False
   changed_when: false
   register: d2
-  when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+  when: >
+    (memcapture_install is defined and memcapture_install) and
+    (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - debug: var=d1.stdout_lines
   when: (memcapture_install is defined and memcapture_install)
 - debug: var=d2.stdout_lines
   when: (memcapture_install is defined and memcapture_install)
 - name: Ensure appropriate symlink to latest src/kernels in order to build module
-  file: "src=/usr/src/kernels/{{ d2.stdout_lines.0 | replace('kernel-headers-', '') }} dest=/lib/modules/{{ ansible_kernel }}/build state=link"
-  #when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS') and ansible_distribution_version == '7.1'
+  file:
+    src: "/usr/src/kernels/{{ d2.stdout_lines.0 | replace('kernel-headers-', '') }}"
+    dest: "/lib/modules/{{ ansible_kernel }}/build"
+    state: link
   become: yes
   ignore_errors: true
-  when: (memcapture_install is defined and memcapture_install) and (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
-- stat: path={{ bin_path }}/LiME
+  when: >
+    (memcapture_install is defined and memcapture_install) and
+    (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+- name: Check if LiME directory is present
+  stat: path={{ bin_path }}/LiME
   register: gitlime
 - name: Lime git clone
   git:
-    repo=https://github.com/504ensicsLabs/LiME.git
-    dest={{ bin_path }}/LiME
+    repo: https://github.com/504ensicsLabs/LiME.git
+    dest: "{{ bin_path }}/LiME"
+    version: "{{ memcapture_lime_version | default('9bd146ae54ef9f04acc09c44544aaf66aa8566d1') }}"
   when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download)
   ignore_errors: true
   register: clonelime
@@ -77,8 +95,9 @@
   register: gitvol
 - name: Volatility git clone
   git:
-    repo=https://github.com/volatilityfoundation/volatility
-    dest={{ bin_path }}/volatility
+    repo: https://github.com/volatilityfoundation/volatility
+    dest: "{{ bin_path }}/volatility"
+    version: "{{ memcapture_volatility_version | default('f1ac0b1e90cf486da2a37cffb3448b208943d226') }}"
   when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download)
   ignore_errors: true
   register: clonevol
@@ -110,9 +129,10 @@
 #    repo=https://github.com/juju4/lmg
 - name: lmg git clone
   git:
-    repo=https://github.com/halpomeranz/lmg
-    dest={{ bin_path }}/lmg
-    update=no
+    repo: https://github.com/halpomeranz/lmg
+    dest: "{{ bin_path }}/lmg"
+    version: "{{ memcapture_lmg_version | default('2cef0e6b67b30c595f73a4f8c28e3cb862f69189') }}"
+    update: no
   when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download)
   ignore_errors: true
   register: clonelmg
@@ -140,10 +160,18 @@
   when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download) and clonelmg.failed
 
 - name: CPU included in KVER
-  replace: dest="{{ bin_path }}/lmg/lmg" regexp='LIMEMOD=\$LIMEDIR/lime-\$KVER-\$CPU.ko' replace='LIMEMOD=$LIMEDIR/lime-$KVER.ko' backup=yes
+  replace:
+    dest: "{{ bin_path }}/lmg/lmg"
+    regexp: 'LIMEMOD=\$LIMEDIR/lime-\$KVER-\$CPU.ko'
+    replace: 'LIMEMOD=$LIMEDIR/lime-$KVER.ko'
+    backup: yes
   when: (memcapture_install is defined and memcapture_install)
 - name: update volatility dir
-  replace: dest="{{ bin_path }}/lmg/lmg" regexp='VOLDIR=\$\(dirname \$\(find \$BUILDDIR -name module.c\) 2\>/dev/null\)' replace='VOLDIR={{ bin_path }}/volatility' backup=yes
+  replace:
+    dest: "{{ bin_path }}/lmg/lmg"
+    regexp: 'VOLDIR=\$\(dirname \$\(find \$BUILDDIR -name module.c\) 2\>/dev/null\)'
+    replace: 'VOLDIR={{ bin_path }}/volatility'
+    backup: yes
   when: (memcapture_install is defined and memcapture_install)
 
 - command: "ls {{ bin_path }}/lmg"
@@ -197,20 +225,29 @@
 - block:
     - debug: var=ansible_kernel
     - name: recreate volatility profile archive
-    #  command: "zip {{ dst_path }}/{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }} creates={{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip chdir={{ bin_path }}"
-      command: "zip {{ bin_path }}/volatility/volatility/plugins/overlays/linux//{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }} creates={{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip chdir={{ bin_path }}"
+      command: >
+        zip {{ bin_path }}/volatility/volatility/plugins/overlays/linux/{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip
+        volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }}
+      args:
+        chdir: "{{ bin_path }}"
+        creates: "{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip"
 
     - name: check profile is valid
-      #command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime --profile Linux{{ fname }}-profilex64 imageinfo chdir={{ dst_path }}/capture/{{ fname }}"
-      command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime --profile {{ fname }}-profile imageinfo chdir={{ dst_path }}/capture/{{ fname }}"
+      command: >
+        python {{ bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime
+            --profile {{ fname }}-profile imageinfo
+      args:
+        chdir: "{{ dst_path }}/capture/{{ fname }}"
       changed_when: false
       register: checkprofile
       failed_when: "'Invalid profile' in checkprofile.stderr"
       ignore_errors: true
     - debug: var=checkprofile
-  when: not (ansible_virtualization_type is defined and (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker")) and not (ansible_distribution_major_version == "6" and ansible_virtualization_type == "kvm")
+  when: >
+    not (ansible_virtualization_type is defined and
+          (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker")
+        ) and
+    not (ansible_distribution_major_version == "6" and ansible_virtualization_type == "kvm")
 
 - debug: var=lmgout.stdout_lines
   when: lmgout is defined and lmgout.rc is defined and lmgout.rc != 0
-
-

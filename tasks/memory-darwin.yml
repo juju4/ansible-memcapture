@@ -1,8 +1,10 @@
 ---
 
-- set_fact:
+- name: Set fact osxpmem_archive
+  set_fact:
     osxpmem_archive: "{{ bin_path }}/{{ memcapture_osxpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
-- set_fact:
+- name: Set fact osxpmem_bin...
+  set_fact:
     osxpmem_bin: "{{ bin_path }}/osxpmem.app/osxpmem"
     osxpmem_capture: "{{ dst_path }}/{{ prefix }}-memory.{{ memcapture_osxpmem_ext }}"
 
@@ -18,13 +20,16 @@
 
 - debug: var=osxpmem_bin
 - name: extract osxpmem
-## FIXME! FAILED! => {"changed": false, "failed": true, "msg": "Unable to find '/tmp/ir-bin/osxpmem-2.1.post4.zip' in expected paths."}
+## FIXME!
 #  unarchive:
 #    src: "{{ osxpmem_archive }}"
 #    dest: "{{ bin_path }}"
 #    mode: "0700"
 #    creates: "{{ osxpmem_bin }}"
-  command: "unzip {{ osxpmem_archive }} chdir={{ bin_path }} creates={{ osxpmem_bin }}"
+  command: "unzip {{ osxpmem_archive }}"
+  args:
+    chdir: "{{ bin_path }}"
+    creates: "{{ osxpmem_bin }}"
 
 - debug: var=harden_darwin_santa_mode
 - block:
@@ -38,7 +43,10 @@
 
 - block:
     - name: do memory capture (osxpmem)
-      command: "{{ osxpmem_bin }} --format {{ memcapture_osxpmem_ext | default('map') }} -o {{ osxpmem_capture }} creates={{ osxpmem_capture }}"
+      command: >
+        {{ osxpmem_bin }} --format {{ memcapture_osxpmem_ext | default('map') }} -o {{ osxpmem_capture }}
+      args:
+        creates: "{{ osxpmem_capture }}"
       when: (memcapture_capture is defined and memcapture_capture)
 
     ## Note: you could recover also /private/var/vm/{sleepimage,swapfile} if not encrypted (sysctl vm.swapusage)
@@ -65,20 +73,34 @@
         - name: create current macos volatility profile
           shell: "{{ item.c }} creates={{ item.n }}"
           with_items:
-            - { c: "dwarfdump -arch x86_64 -i /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel.dSYM > {{ dst_path }}/{{ kdk_v }}.dwarfdump", n: "{{ dst_path }}/{{ kdk_v }}.dwarfdump" }
-            - { c: "dsymutil -s -arch x86_64 /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel > {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil", n: "{{ dst_path }}/{{ kdk_v }}.symbol.dsymutil" }
-            - { c: "python {{ bin_path }}/convert.py {{ dst_path }}/{{ kdk_v }}.dwarfdump {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump", n: "{{ dst_path }}/converted-{{ kdk_v }}.dwarfdump" }
-            - { c: "python {{ bin_path }}/convert.py {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump > {{ dst_path }}/{{ kdk_v }}.vtypes", n: "{{ dst_path }}/{{ kdk_v }}.vtypes" }
-            - { c: "zip {{ dst_path }}/{{ kdk_v }}.zip {{ dst_path }}/{{ kdk_v }}.vtypes {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil", n: "{{ dst_path }}/{{ kdk_v }}.zip" }
+            - { c: "dwarfdump -arch x86_64 -i /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel.dSYM > {{ dst_path }}/{{ kdk_v }}.dwarfdump",
+                n: "{{ dst_path }}/{{ kdk_v }}.dwarfdump"
+              }
+            - { c: "dsymutil -s -arch x86_64 /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel > {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil",
+                n: "{{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
+              }
+            - { c: "python {{ bin_path }}/convert.py {{ dst_path }}/{{ kdk_v }}.dwarfdump {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump",
+                n: "{{ dst_path }}/converted-{{ kdk_v }}.dwarfdump"
+              }
+            - { c: "python {{ bin_path }}/convert.py {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump > {{ dst_path }}/{{ kdk_v }}.vtypes",
+                n: "{{ dst_path }}/{{ kdk_v }}.vtypes"
+              }
+            - { c: "zip {{ dst_path }}/{{ kdk_v }}.zip {{ dst_path }}/{{ kdk_v }}.vtypes {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil",
+                n: "{{ dst_path }}/{{ kdk_v }}.zip"
+              }
 
         - name: Volatility git clone
           git:
-            repo=https://github.com/volatilityfoundation/volatility
-            dest={{ bin_path }}/volatility
-            update=no
+            repo: https://github.com/volatilityfoundation/volatility
+            dest: "{{ bin_path }}/volatility"
+            version: "{{ memcapture_volatility_version | default('f1ac0b1e90cf486da2a37cffb3448b208943d226') }}"
+            update: no
         - name: check profile is valid
-          #command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ dst_path }}/{{ prefix }}-memory.raw --profile {{ kdk_v }} imageinfo chdir={{ dst_path }}"
-          command: "python {{ bin_path }}/volatility/vol.py --plugins . -f {{ dst_path }}/{{ prefix }}-memory.raw --profile Mac{{ kdk_v }}x64 imageinfo chdir={{ dst_path }}"
+          command: >
+            python {{ bin_path }}/volatility/vol.py --plugins . -f {{ dst_path }}/{{ prefix }}-memory.raw
+                --profile Mac{{ kdk_v }}x64 imageinfo
+          args:
+            chdir: "{{ dst_path }}"
           changed_when: false
           register: checkprofile
           failed_when: "'Invalid profile' in checkprofile.stderr"
@@ -104,4 +126,3 @@
   stat: path="{{ osxpmem_capture }}" checksum_algorithm=sha256
   register: outputstat
 - debug: var=outputstat.stat.checksum
-

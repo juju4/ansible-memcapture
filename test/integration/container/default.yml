@@ -5,4 +5,3 @@
     memcapture_capture: false
   roles:
     - juju4.memcapture
-
