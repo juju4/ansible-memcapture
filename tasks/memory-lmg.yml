@@ -182,9 +182,9 @@
   register: dwarf
 ## Note: if nfs/samba mount, owner/perms might not be preserved so ignore those errors
 - name: Extract dwarfdump utilities
-## FAILED! => {"failed": true, "msg": "file or module does not exist: /tmp/ir-bin/lmg/static-dwarfdump.tgz"}
-#  unarchive: src={{ bin_path }}/lmg/static-dwarfdump.tgz dest={{ bin_path }}/lmg
-  command: "tar xzf {{ bin_path }}/lmg/static-dwarfdump.tgz chdir={{ bin_path }}/lmg"
+  unarchive:
+    src: "{{ bin_path }}/lmg/static-dwarfdump.tgz"
+    dest: "{{ bin_path }}/lmg"
   when: not dwarf.stat.exists and (memcapture_download is defined and memcapture_download)
   ignore_errors: true
 
