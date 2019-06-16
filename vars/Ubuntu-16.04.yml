@@ -10,3 +10,10 @@ memory_lmg_deps:
     - binutils
 
 memcapture_cc: gcc-5
+
+memory_avml_deps:
+  - musl-dev
+  - musl-tools
+  - musl
+#  - cargo
+#  - rustc

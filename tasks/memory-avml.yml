@@ -5,7 +5,7 @@
     avml_archive: "{{ bin_path }}/{{ memcapture_avml_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
 - name: Set fact avml_bin...
   set_fact:
-    avml_bin: "{{ avml_archive | regex_replace('.(gz|tgz|tar.gz)$', '') }}"
+    avml_bin: "{{ bin_path }}/avml-{{ memcapture_avml_v }}/target/x86_64-unknown-linux-musl/release/avml"
     avml_capture: "{{ dst_path }}/{{ prefix }}-memory-avml.{{ memcapture_avml_ext }}"
 
 - name: Ensure ansible dependencies are present
@@ -28,10 +28,49 @@
   when: not avml.stat.exists and (memcapture_download is defined and memcapture_download)
 
 - name: Extract avml
-  command: "gunzip {{ avml_archive }}"
+  unarchive:
+    src: "{{ avml_archive }}"
+    dest: "{{ bin_path }}"
+  when: not avml.stat.exists
+
+# No musl* packages on centos7, only starting with Fedora29
+- name: Ensure avml build dependencies
+  package:
+    name: "{{ memory_avml_deps }}"
+    state: present
+  become: yes
+  register: pkg_result
+  until: pkg_result is success
+  when:
+    - memcapture_install is defined
+    - memcapture_install
+    - ansible_os_family == "Debian"
+
+- name: Download Rustup
+  get_url:
+    src: https://sh.rustup.rs
+    dest: "{{ bin_path }}/rustup.sh"
+  when: (memcapture_download is defined and memcapture_download)
+
+- name: Install rustup
+  command: sh rustup.sh -y
   args:
-    chdir: "{{ bin_path }}"
-  when: not avml.stat.exists and memcapture_avml_url.find('.tgz') != -1
+    chdir: "{{ bin_path }}"
+    creates: /root/.cargo/env
+  when: >
+    (memcapture_install is defined and memcapture_install)
+
+- name: Add the MUSL target for Rust
+  command: rustup target add x86_64-unknown-linux-musl
+  environment:
+    PATH: /root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+- name: Build avml
+  command: cargo build --release --target x86_64-unknown-linux-musl
+  args:
+    creates: "{{ avml_bin }}"
+  environment:
+    PATH: /root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 - name: check appropriate permissions
   file:
