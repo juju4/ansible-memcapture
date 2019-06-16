@@ -63,6 +63,8 @@
 
 - name: Add the MUSL target for Rust
   command: rustup target add x86_64-unknown-linux-musl
+  args:
+    creates: /root/.cargo/registry/src/github.com-1ecc6299db9ec823/libc-0.2.58/src/unix/notbsd/linux/musl
   environment:
     PATH: /root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
