@@ -6,6 +6,8 @@
   pre_tasks:
     - set_fact:
         memcapture_use_avml: true
-      when: ansible_os_family == "RedHat"
+      when: >
+        ansible_os_family == "RedHat" or
+        (ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int <= 14)
   roles:
     - juju4.memcapture
