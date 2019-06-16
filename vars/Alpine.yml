@@ -12,5 +12,6 @@ memcapture_cc: gcc
 
 memory_avml_deps:
   - musl
+  - curl
 #  - cargo
 #  - rust

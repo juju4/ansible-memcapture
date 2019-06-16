@@ -15,5 +15,6 @@ memory_avml_deps:
   - musl-dev
   - musl-tools
   - musl
+  - curl
 #  - cargo
 #  - rustc
