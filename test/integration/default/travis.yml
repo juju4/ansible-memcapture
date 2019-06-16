@@ -5,7 +5,7 @@
     memcapture_capture: false
   pre_tasks:
     - set_fact:
-        memcapture_use_avml: true
+        memcapture_use_avml: false
       when: >
         ansible_os_family == "RedHat" or
         (ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int <= 14)
