@@ -31,7 +31,7 @@
     url: "{{ memcapture_linpmem_url }}"
     dest: "{{ linpmem_archive }}"
     mode: '0400'
-  when: not linpmem.stat.exists and (memcapture_download is defined and memcapture_download)
+  when: not linpmem.stat.exists and (memcapture_download is defined and memcapture_download|bool)
 
 - name: Extract linpmem
   command: "gunzip {{ linpmem_archive }} chdir={{ bin_path }}"
@@ -54,7 +54,7 @@
   args:
     chdir: "{{ bin_path }}"
   become: yes
-  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
   ignore_errors: true
 
 - name: retrieve output hash

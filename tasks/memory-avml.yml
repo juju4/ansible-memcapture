@@ -43,14 +43,14 @@
   until: pkg_result is success
   when:
     - memcapture_install is defined
-    - memcapture_install
+    - memcapture_install|bool
     - ansible_os_family == "Debian"
 
 - name: Download Rustup
   get_url:
     src: https://sh.rustup.rs
     dest: "{{ bin_path }}/rustup.sh"
-  when: (memcapture_download is defined and memcapture_download)
+  when: (memcapture_download is defined and memcapture_download|bool)
 
 - name: Install rustup
   command: sh rustup.sh -y
@@ -58,7 +58,7 @@
     chdir: "{{ bin_path }}"
     creates: /root/.cargo/env
   when: >
-    (memcapture_install is defined and memcapture_install)
+    (memcapture_install is defined and memcapture_install|bool)
 
 - name: Add the MUSL target for Rust
   command: rustup target add x86_64-unknown-linux-musl
@@ -86,7 +86,7 @@
   args:
     chdir: "{{ bin_path }}"
   become: yes
-  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
   ignore_errors: true
 
 - name: retrieve output hash

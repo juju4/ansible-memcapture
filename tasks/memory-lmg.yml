@@ -4,7 +4,7 @@
   apt: name={{ memory_lmg_deps }} state=present
   become: yes
   when: >
-    (memcapture_install is defined and memcapture_install) and
+    (memcapture_install is defined and memcapture_install|bool) and
     (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
 ## Note: seems distribution are not keeping their linux-headers for all base kernel...
 ##       Ubuntu12.04 "No package matching 'linux-headers-3.19.0-30-generic' is available"
@@ -16,7 +16,7 @@
   yum: name={{ memory_lmg_deps }} state=present
   become: yes
   when: >
-    (memcapture_install is defined and memcapture_install) and
+    (memcapture_install is defined and memcapture_install|bool) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
   register: pkg_result
   until: pkg_result is success
@@ -28,7 +28,7 @@
   changed_when: false
   register: d1
   when: >
-    (memcapture_install is defined and memcapture_install) and
+    (memcapture_install is defined and memcapture_install|bool) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - name: redhat | check installed kernel-headers rpm
   command: "rpm -qa kernel-headers"
@@ -40,9 +40,9 @@
     (memcapture_install is defined and memcapture_install) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - debug: var=d1.stdout_lines
-  when: (memcapture_install is defined and memcapture_install)
+  when: (memcapture_install is defined and memcapture_install|bool)
 - debug: var=d2.stdout_lines
-  when: (memcapture_install is defined and memcapture_install)
+  when: (memcapture_install is defined and memcapture_install|bool)
 - name: Ensure appropriate symlink to latest src/kernels in order to build module
   file:
     src: "/usr/src/kernels/{{ d2.stdout_lines.0 | replace('kernel-headers-', '') }}"
@@ -51,7 +51,7 @@
   become: yes
   ignore_errors: true
   when: >
-    (memcapture_install is defined and memcapture_install) and
+    (memcapture_install is defined and memcapture_install|bool) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - name: Check if LiME directory is present
   stat: path={{ bin_path }}/LiME
@@ -61,7 +61,7 @@
     repo: https://github.com/504ensicsLabs/LiME.git
     dest: "{{ bin_path }}/LiME"
     version: "{{ memcapture_lime_version | default('9bd146ae54ef9f04acc09c44544aaf66aa8566d1') }}"
-  when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download)
+  when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download|bool)
   ignore_errors: true
   register: clonelime
 
@@ -88,7 +88,7 @@
         src: "{{ bin_path }}/LiME-master"
         dest: "{{ bin_path }}/LiME"
         state: link
-  when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download) and clonelime.failed
+  when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download|bool) and clonelime.failed
 
 - name: Check if volatility source is present
   stat: path={{ bin_path }}/volatility
@@ -98,7 +98,7 @@
     repo: https://github.com/volatilityfoundation/volatility
     dest: "{{ bin_path }}/volatility"
     version: "{{ memcapture_volatility_version | default('f1ac0b1e90cf486da2a37cffb3448b208943d226') }}"
-  when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download)
+  when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download|bool)
   ignore_errors: true
   register: clonevol
 
@@ -125,7 +125,7 @@
         src: "{{ bin_path }}/volatility-master"
         dest: "{{ bin_path }}/volatility"
         state: link
-  when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download) and clonevol.failed
+  when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download|bool) and clonevol.failed
 
 - name: Check if LMG directory is present
   stat: path={{ bin_path }}/lmg
@@ -137,7 +137,7 @@
     dest: "{{ bin_path }}/lmg"
     version: "{{ memcapture_lmg_version | default('2cef0e6b67b30c595f73a4f8c28e3cb862f69189') }}"
     update: no
-  when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download)
+  when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download|bool)
   ignore_errors: true
   register: clonelmg
 
@@ -164,7 +164,7 @@
         src: "{{ bin_path }}/lmg-master"
         dest: "{{ bin_path }}/lmg"
         state: link
-  when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download) and clonelmg.failed
+  when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download|bool) and clonelmg.failed
 
 - name: CPU included in KVER
   replace:
@@ -194,7 +194,7 @@
   unarchive:
     src: "{{ bin_path }}/lmg/static-dwarfdump.tgz"
     dest: "{{ bin_path }}/lmg"
-  when: not dwarf.stat.exists and (memcapture_download is defined and memcapture_download)
+  when: not dwarf.stat.exists and (memcapture_download is defined and memcapture_download|bool)
   ignore_errors: true
 
 - name: update module.dwarf build path in lmg
@@ -214,7 +214,7 @@
     TARGETDIR: "{{ dst_path }}"
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ bin_path }}/lmg/dwarfdump"
   become: yes
-  when: not memcapture.stat.exists and (memcapture_capture is defined and memcapture_capture)
+  when: not memcapture.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
   ignore_errors: true
   register: lmgout
 

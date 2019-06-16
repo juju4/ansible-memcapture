@@ -17,7 +17,7 @@
     dest: "{{ osxpmem_archive }}"
     mode: 0444
 #    checksum: "{{ memcapture_osxpmem_hash }}"
-  when: not osxpmem.stat.exists and memcapture_download
+  when: not osxpmem.stat.exists and memcapture_download|bool
 
 - debug: var=osxpmem_bin
 - name: extract osxpmem
@@ -48,7 +48,7 @@
         {{ osxpmem_bin }} --format {{ memcapture_osxpmem_ext | default('map') }} -o {{ osxpmem_capture }}
       args:
         creates: "{{ osxpmem_capture }}"
-      when: (memcapture_capture is defined and memcapture_capture)
+      when: (memcapture_capture is defined and memcapture_capture|bool)
 
     ## Note: you could recover also /private/var/vm/{sleepimage,swapfile} if not encrypted (sysctl vm.swapusage)
     ## FIXME! install/run rekall in live mode to check that we have a profile? rekall -f /dev/pmem imageinfo

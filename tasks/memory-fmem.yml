@@ -23,12 +23,12 @@
     url: "http://hysteria.cz/niekt0/fmem/fmem_{{ memcapture_fmem_v }}.tgz"
     dest: "{{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
     mode: '0400'
-  when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download)
+  when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download|bool)
 - name: Extract fmem
   unarchive:
     src: "{{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
     dest: "{{ bin_path }}"
-  when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download)
+  when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download|bool)
 
 # change memory size
 
@@ -51,7 +51,7 @@
   command: "{{ item }} chdir={{ bin_path }}/fmem_{{ memcapture_fmem_v }}"
   with_items:
     - make
-  when: not fmemko.stat.exists and (memcapture_build is defined and memcapture_build)
+  when: not fmemko.stat.exists and (memcapture_build is defined and memcapture_build|bool)
 
 ## if multiple pre-compiled fmem
 #- copy: src={{ bin_path }}/fmem_{{ memcapture_fmem_v }}/run.sh dest={{ dst_path }}/run.sh mode=0755
@@ -65,7 +65,7 @@
   become: yes
 ## if run.sh/fmem.ko already loaded
   ignore_errors: true
-  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
 - name: FMEM | memory capture (2)
   command: >
     dd if=/dev/fmem of={{ dst_path }}/{{ prefix }}-memory-fmem.img conv=noerror,sync bs={{ memcapture_memory_bs }}
@@ -73,7 +73,7 @@
   args:
     chdir: "{{ bin_path }}/fmem_{{ memcapture_fmem_v }}"
   become: yes
-  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
 
 - name: retrieve output hash
   stat: path="{{ dst_path }}/{{ prefix }}-memory-fmem.img" checksum_algorithm=sha256
