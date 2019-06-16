@@ -6,6 +6,9 @@
 - name: Include version-specific variables for RedHat
   include_vars: "RedHat-{{ ansible_distribution_version.split('.')[0] }}.yml"
   when: ansible_os_family == "RedHat"
+- name: Include specific variables for Alpine
+  include_vars: "Alpine.yml"
+  when: ansible_distribution == 'Alpine'
 
 - debug: var=memcapture_use_linpmem
 - debug: var=memcapture_use_fmem
