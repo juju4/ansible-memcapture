@@ -69,6 +69,7 @@
 - name: Build avml
   command: cargo build --release --target x86_64-unknown-linux-musl
   args:
+    chdir: "{{ bin_path }}/avml-{{ memcapture_avml_v }}"
     creates: "{{ avml_bin }}"
   environment:
     PATH: /root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
