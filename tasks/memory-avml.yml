@@ -74,10 +74,11 @@
   environment:
     PATH: /root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-- name: check appropriate permissions
-  file:
-    path: "{{ avml_bin }}"
-    mode: '0700'
+#- name: check appropriate permissions
+#  file:
+#    path: "{{ avml_bin }}"
+#    mode: '0700'
+
 - name: Check if existing avml capture
   stat:
     path: "{{ avml_capture }}"
