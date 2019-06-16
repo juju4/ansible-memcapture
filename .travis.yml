@@ -67,7 +67,7 @@ script:
   - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/roles/juju4.memcapture/test/integration/default/travis.yml --syntax-check'
 
   # Test role.
-  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/roles/juju4.memcapture/test/integration/default/travis.yml ${ansible_extra_vars}'
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/roles/juju4.memcapture/test/integration/default/travis.yml ${ansible_extra_vars} -vv'
 
   # Test role idempotence.
   - >
