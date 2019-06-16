@@ -10,6 +10,7 @@
 - debug: var=memcapture_use_linpmem
 - debug: var=memcapture_use_fmem
 - debug: var=memcapture_use_lmg
+- debug: var=memcapture_use_avml
 - debug: var=memcapture_capture
 
 - name: check appropriate directories exist
@@ -52,6 +53,11 @@
   when: ansible_system == 'Linux' and memcapture_use_lmg is defined and memcapture_use_lmg
   tags:
     - lmg
+
+- include: memory-avml.yml
+  when: ansible_system == 'Linux' and memcapture_use_avml is defined and memcapture_use_avml
+  tags:
+    - avml
 
 ## compress file after?
 - block:

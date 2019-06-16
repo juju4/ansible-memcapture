@@ -40,6 +40,7 @@ memcapture_fmem_v: 1.6-1
 memcapture_use_linpmem: true
 memcapture_use_fmem: true
 memcapture_use_lmg: true
+memcapture_use_avml: true
 
 memcapture_winpmem_v: 3.3.rc1
 memcapture_winpmem_url: https://github.com/Velocidex/c-aff4/releases/download/v3.3.rc1/winpmem_v3.3.rc1.exe
@@ -68,6 +69,14 @@ memcapture_osxpmem_ext: raw
 #memcapture_osxpmem_v: 1.0RC3
 #memcapture_osxpmem_url: https://github.com/google/rekall/releases/download/v1.0rc11/OSXPMem-RC3-signed.tar.gz
 #memcapture_osxpmem_ext: img
+memcapture_avml_v: v0.1.1
+memcapture_avml_url: https://github.com/microsoft/avml/archive/v0.1.1.tar.gz
+memcapture_avml_ext: lime
+memcapture_avml_args: "--compress"
+# To upload to Azure Blob Store
+#memcapture_avml_args: "--sas_url $(SAS) --delete"
+# To upload to AWS S3
+#memcapture_avml_args: "--put ${URL} --delete"
 
 ## fetch output to orchestrator?
 ## Note: might be better to do manually as large file can create a module failure

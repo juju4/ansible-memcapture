@@ -1,0 +1,58 @@
+---
+
+- name: Set fact avml_archive
+  set_fact:
+    avml_archive: "{{ bin_path }}/{{ memcapture_avml_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
+- name: Set fact avml_bin...
+  set_fact:
+    avml_bin: "{{ avml_archive | regex_replace('.(gz|tgz|tar.gz)$', '') }}"
+    avml_capture: "{{ dst_path }}/{{ prefix }}-memory-avml.{{ memcapture_avml_ext }}"
+
+- name: Ensure ansible dependencies are present
+  package:
+    name: libselinux-python
+    state: present
+  register: pkg_result
+  until: pkg_result is success
+  when: memcapture_install and ansible_os_family == "RedHat"
+
+- name: Check if avml archive is present
+  stat:
+    path: "{{ avml_bin }}"
+  register: avml
+- name: Microsoft Avml download
+  get_url:
+    url: "{{ memcapture_avml_url }}"
+    dest: "{{ avml_archive }}"
+    mode: '0400'
+  when: not avml.stat.exists and (memcapture_download is defined and memcapture_download)
+
+- name: Extract avml
+  command: "gunzip {{ avml_archive }}"
+  args:
+    chdir: "{{ bin_path }}"
+  when: not avml.stat.exists and memcapture_avml_url.find('.tgz') != -1
+
+- name: check appropriate permissions
+  file:
+    path: "{{ avml_bin }}"
+    mode: '0700'
+- name: Check if existing avml capture
+  stat:
+    path: "{{ avml_capture }}"
+  register: memcapture2
+
+- name: memory capture (avml)
+  command: "{{ avml_bin }} {{ memcapture_avml_args }} {{ avml_capture }}"
+  args:
+    chdir: "{{ bin_path }}"
+  become: yes
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture)
+  ignore_errors: true
+
+- name: retrieve output hash
+  stat:
+    path: "{{ avml_capture }}"
+    checksum_algorithm: sha256
+  register: outputstat
+- debug: var=outputstat.stat.checksum

@@ -3,9 +3,11 @@
 # Memory capture ansible role
 
 A simple ansible role to install and execute live memory capture tools.
-Rekall pmem suite (linux/macos/win) https://github.com/google/rekall/releases
-Linux Lmg https://github.com/halpomeranz/lmg
-Linux Fmem http://hysteria.sk/~niekt0/foriana/fmem_current.tgz
+
+* [Rekall pmem suite (linux/macos/win)](https://github.com/google/rekall/releases)
+* [Linux Lmg](https://github.com/halpomeranz/lmg)
+* [Linux Fmem](http://hysteria.sk/~niekt0/foriana/fmem_current.tgz)
+* [Microsoft AVML](https://github.com/microsoft/avml/)
 
 ## Requirements & Dependencies
 
@@ -15,6 +17,7 @@ It was tested on the following versions:
  * 2.0
  * 2.2
  * 2.5
+ * 2.8
 
 ### Operating systems
 
