@@ -222,7 +222,7 @@
 - name: retrieve lmg output dir
   shell: |
     set -o pipefail
-    ls -At {{ dst_path }}/capture/ | head -1"
+    ls -At {{ dst_path }}/capture/ | head -1
   args:
     executable: /bin/bash
   changed_when: false
