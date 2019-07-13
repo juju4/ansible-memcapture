@@ -219,19 +219,34 @@
   register: lmgout
 
 ## https://github.com/volatilityfoundation/volatility/wiki/Linux
-- name: retrieve lmg output dir
-  shell: |
-    set -o pipefail
-    ls -At {{ dst_path }}/capture/ | head -1
-  args:
-    executable: /bin/bash
-  changed_when: false
-  register: lscapture
-  ignore_errors: true
-- name: Set fact output directory name
-  set_fact:
-#    fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
-    fname: "{{ lscapture.stdout }}"
+- block:
+    - name: retrieve lmg output dir
+      shell: |
+        set -o pipefail
+        ls -At {{ dst_path }}/capture/ | head -1
+      args:
+        executable: /bin/bash
+      changed_when: false
+      register: lscapture
+      ignore_errors: true
+    - name: Set fact output directory name
+      set_fact:
+        #fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
+        fname: "{{ lscapture.stdout }}"
+  when: ansible_distribution != 'Alpine'
+- block:
+    - name: retrieve lmg output dir
+      shell: |
+        set -o pipefail
+        ls -At {{ dst_path }}/capture/ | head -1
+      changed_when: false
+      register: lscapture
+      ignore_errors: true
+    - name: Set fact output directory name
+      set_fact:
+        #fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
+        fname: "{{ lscapture.stdout }}"
+  when: ansible_distribution == 'Alpine'
 
 - name: retrieve output hash
   stat: path="{{ dst_path }}/capture/{{ fname }}/{{ fname }}-memory.lime" checksum_algorithm=sha256
