@@ -220,7 +220,11 @@
 
 ## https://github.com/volatilityfoundation/volatility/wiki/Linux
 - name: retrieve lmg output dir
-  shell: "ls -At {{ dst_path }}/capture/ | head -1"
+  shell: |
+    set -o pipefail
+    ls -At {{ dst_path }}/capture/ | head -1"
+  args:
+    executable: /bin/bash
   changed_when: false
   register: lscapture
 - name: Set fact output directory name
