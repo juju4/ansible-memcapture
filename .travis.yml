@@ -83,7 +83,18 @@ script:
     || (echo 'Idempotence test: fail' && cat /tmp/idempotency.log && exit 1)
 #  - 'sudo docker exec "$(cat ${container_id})" cat /tmp/idempotency.log'
 
+after_failure:
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ls -l /usr/bin/ | egrep "(python|pip|ansible)"'
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm pip freeze'
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm pip3 freeze'
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm rpm -qa'
+  # Check what happened on systemd systems.
+  - 'docker exec --tty "$(cat ${container_id})" env TERM=xterm systemctl -l --no-pager status dnscrypt-proxy'
+  - 'docker exec --tty "$(cat ${container_id})" env TERM=xterm journalctl -xe --no-pager'
+
 after_script:
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ps axu'
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ls -lR /tmp/cases'
   # Clean up
   - 'sudo docker stop "$(cat ${container_id})"'
 
