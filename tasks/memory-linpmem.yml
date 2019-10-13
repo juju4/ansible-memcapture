@@ -78,3 +78,4 @@
         t: "{{ dst_path }}/{{ prefix }}-proc-kcore"
       }
   ignore_errors: true
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
