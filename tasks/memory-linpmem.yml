@@ -11,13 +11,11 @@
 
 - name: Ensure ansible dependencies are present
   package:
-    name: "{{ item }}"
+    name: libselinux-python
     state: present
-  with_items:
-    - libselinux-python
   register: pkg_result
   until: pkg_result is success
-  when: memcapture_install and ansible_os_family == "RedHat"
+  when: memcapture_install and (ansible_os_family == "RedHat" and ansible_distribution_major_version|int != 8)
 #  when: >
 #    memcapture_install and
 #    ansible_selinux is defined and ansible_selinux and ansible_selinux.status == 'enabled'
