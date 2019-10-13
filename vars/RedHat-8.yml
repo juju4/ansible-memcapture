@@ -1,0 +1,13 @@
+---
+
+memory_lmg_deps:
+    - git
+    - zip
+    - make
+    - gcc
+    - gcc-c++
+    - kernel-devel
+    - kernel-headers
+    - nss
+    - python-crypto
+    - binutils
