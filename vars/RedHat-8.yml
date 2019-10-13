@@ -9,5 +9,5 @@ memory_lmg_deps:
     - kernel-devel
     - kernel-headers
     - nss
-    - python-crypto
+    - python3-crypto
     - binutils
