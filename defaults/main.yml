@@ -86,3 +86,5 @@ memcapture_pulldir: tmp/
 
 ## just for centos6/epel ansible 2.2.0 to avoid undefined variable. defined during play on Macos only
 kdk_v: ''
+
+orchestrator_files_archives: files
