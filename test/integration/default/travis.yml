@@ -3,6 +3,7 @@
 - hosts: all
   vars:
     memcapture_capture: false
+    orchestrator_files_archives: /tmp
   pre_tasks:
     - set_fact:
         memcapture_use_avml: false
