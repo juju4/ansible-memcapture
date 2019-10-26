@@ -37,10 +37,19 @@
 #  unarchive: src="{{ bin_path }}/{{ linpmem_archive }}" dest="{{ bin_path }}" copy=no
   when: not linpmem.stat.exists and memcapture_linpmem_url.find('.tgz') != -1
 
+- name: Install linpmem locally
+  copy:
+    src: "{{ linpmem_bin }}"
+    dest: /usr/local/bin/
+    mode: '0700'
+    remote_src: true
+  when: memcapture_install
+
 - name: check appropriate permissions
   file:
     path: "{{ linpmem_bin }}"
     mode: '0700'
+
 - name: Check if existing linpmem capture
   stat:
     path: "{{ linpmem_capture }}"
