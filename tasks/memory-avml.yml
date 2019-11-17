@@ -32,6 +32,8 @@
       url: "{{ memcapture_avml_url }}"
       dest: "{{ avml_archive }}"
       mode: '0400'
+    register: dl_result
+    until: dl_result is success
     when: not avml.stat.exists and (memcapture_download is defined and memcapture_download)
 
   - name: Extract avml

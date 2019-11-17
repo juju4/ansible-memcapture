@@ -17,6 +17,8 @@
     dest: "{{ osxpmem_archive }}"
     mode: 0444
 #    checksum: "{{ memcapture_osxpmem_hash }}"
+  register: dl_result
+  until: dl_result is success
   when: not osxpmem.stat.exists and memcapture_download|bool
 
 - debug: var=osxpmem_bin

@@ -14,6 +14,8 @@
     url: "{{ memcapture_winpmem_url }}"
     dest: "{{ winpmem_bin }}"
     mode: '0400'
+  register: dl_result
+  until: dl_result is success
   when: not winpmem.stat.exists and memcapture_download|bool
 
 - name: Check if existing winpmem capture
