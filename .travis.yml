@@ -67,8 +67,10 @@ script:
   - 'sudo docker run --detach --volume="${PWD%/*}":/etc/ansible/roles:ro ${run_opts} ${distribution}-${version}:ansible "${init}" > "${container_id}"'
 
   - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible --version'
+  - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm pip install ansible-lint || true'
 
   # Ansible syntax check.
+ - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-lint /etc/ansible/roles/juju4.memcapture/tasks/main.yml || true'
   - 'sudo docker exec --tty "$(cat ${container_id})" env TERM=xterm ansible-playbook /etc/ansible/roles/juju4.memcapture/test/integration/default/travis.yml --syntax-check'
 
   # Test role.
