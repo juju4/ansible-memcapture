@@ -16,20 +16,20 @@
 
 - name: Check if fmem archive is present
   stat:
-    path: "{{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
+    path: "{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
   register: fmem
 - name: fmem download
   get_url:
     url: "http://hysteria.cz/niekt0/fmem/fmem_{{ memcapture_fmem_v }}.tgz"
-    dest: "{{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
+    dest: "{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
     mode: '0400'
   register: dl_result
   until: dl_result is success
   when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download|bool)
 - name: Extract fmem
   unarchive:
-    src: "{{ bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
-    dest: "{{ bin_path }}"
+    src: "{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
+    dest: "{{ memcapture_bin_path }}"
   when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download|bool)
 
 # change memory size
@@ -46,24 +46,24 @@
   when: not memcapture2.stat.exists
 
 - name: Check if fmem.ko exists
-  stat: path={{ bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem.ko
+  stat: path={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem.ko
   register: fmemko
 ## fmem.ko is probably kernel dependent, so better rebuild... or prebuilt
 - name: FMEM | memory capture
-  command: "{{ item }} chdir={{ bin_path }}/fmem_{{ memcapture_fmem_v }}"
+  command: "{{ item }} chdir={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"
   with_items:
     - make
   when: not fmemko.stat.exists and (memcapture_build is defined and memcapture_build|bool)
 
 ## if multiple pre-compiled fmem
-#- copy: src={{ bin_path }}/fmem_{{ memcapture_fmem_v }}/run.sh dest={{ dst_path }}/run.sh mode=0755
+#- copy: src={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}/run.sh dest={{ dst_path }}/run.sh mode=0755
 #- replace:
 #    dest: "{{ dst_path }}/run.sh"
 #    regexp: 'fmem.ko'
-#    replace: '{{ bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem-{{ ansible_kernel }}.ko'
+#    replace: '{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem-{{ ansible_kernel }}.ko'
 
 - name: FMEM | memory capture (1)
-  command: "./run.sh chdir={{ bin_path }}/fmem_{{ memcapture_fmem_v }}"
+  command: "./run.sh chdir={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"
   become: yes
 ## if run.sh/fmem.ko already loaded
   ignore_errors: true
@@ -73,7 +73,7 @@
     dd if=/dev/fmem of={{ dst_path }}/{{ prefix }}-memory-fmem.img conv=noerror,sync bs={{ memcapture_memory_bs }}
         count={{ memcapture_memory_size }}
   args:
-    chdir: "{{ bin_path }}/fmem_{{ memcapture_fmem_v }}"
+    chdir: "{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"
   become: yes
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
 

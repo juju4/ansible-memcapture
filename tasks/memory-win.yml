@@ -2,7 +2,7 @@
 
 - name: Set fact winpmem_bin...
   set_fact:
-    winpmem_bin: "{{ bin_path }}\\{{ memcapture_winpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
+    winpmem_bin: "{{ memcapture_bin_path }}\\{{ memcapture_winpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
     winpmem_capture: "{{ dst_path }}\\{{ prefix }}-memory.{{ memcapture_winpmem_ext }}"
 
 - name: Check if winpmem binary is present
@@ -51,5 +51,5 @@
 
 ## https://technet.microsoft.com/en-us/sysinternals/bb897438.aspx
 - name: force sync aka write to disk
-  raw: "{{ bin_path }}\\sync.exe -r -e"
+  raw: "{{ memcapture_bin_path }}\\sync.exe -r -e"
   when: docapture.changed

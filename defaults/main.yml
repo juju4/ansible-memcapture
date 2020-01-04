@@ -24,7 +24,7 @@ memcapture_capture: false
 ## if not set, it means local
 #archives: nfs
 #archives: samba
-bin_path: "/tmp/ir-bin"
+memcapture_bin_path: "/tmp/ir-bin"
 ## FIXME! trusted static binaries?
 ##  https://github.com/andrew-d/static-binaries
 ##  https://github.com/minos-org/minos-static

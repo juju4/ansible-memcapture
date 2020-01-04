@@ -21,7 +21,7 @@
   with_items:
     - "{{ dst_mount }}"
     - "{{ dst_path }}"
-    - "{{ bin_path }}"
+    - "{{ memcapture_bin_path }}"
 
 - name: Windows memory capture
   include: memory-win.yml

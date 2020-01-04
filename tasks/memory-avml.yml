@@ -2,10 +2,10 @@
 
 - name: Set fact avml_archive
   set_fact:
-    avml_archive: "{{ bin_path }}/{{ memcapture_avml_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
+    avml_archive: "{{ memcapture_bin_path }}/{{ memcapture_avml_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
 - name: Set fact avml_bin...
   set_fact:
-    avml_bin: "{{ bin_path }}/avml-{{ memcapture_avml_v }}/target/x86_64-unknown-linux-musl/release/avml"
+    avml_bin: "{{ memcapture_bin_path }}/avml-{{ memcapture_avml_v }}/target/x86_64-unknown-linux-musl/release/avml"
     avml_capture: "{{ dst_path }}/{{ prefix }}-memory-avml.{{ memcapture_avml_ext }}"
 
 - name: Check if orchestrator has avml binary
@@ -39,7 +39,7 @@
   - name: Extract avml
     unarchive:
       src: "{{ avml_archive }}"
-      dest: "{{ bin_path }}"
+      dest: "{{ memcapture_bin_path }}"
       remote_src: true
     when: not avml.stat.exists
 
@@ -59,14 +59,14 @@
   - name: Download Rustup
     get_url:
       url: https://sh.rustup.rs
-      dest: "{{ bin_path }}/rustup.sh"
+      dest: "{{ memcapture_bin_path }}/rustup.sh"
       mode: '0600'
     when: (memcapture_download is defined and memcapture_download|bool)
 
   - name: Install rustup
     command: sh rustup.sh -y
     args:
-      chdir: "{{ bin_path }}"
+      chdir: "{{ memcapture_bin_path }}"
       creates: /root/.cargo/env
     when: >
       (memcapture_install is defined and memcapture_install|bool)
@@ -81,7 +81,7 @@
   - name: Build avml
     command: cargo build --release --target x86_64-unknown-linux-musl
     args:
-      chdir: "{{ bin_path }}/avml-{{ memcapture_avml_v }}"
+      chdir: "{{ memcapture_bin_path }}/avml-{{ memcapture_avml_v }}"
       creates: "{{ avml_bin }}"
     environment:
       PATH: /root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -120,7 +120,7 @@
 - name: memory capture (avml)
   command: "/usr/local/bin/avml {{ memcapture_avml_args }} {{ avml_capture }}"
   args:
-    chdir: "{{ bin_path }}"
+    chdir: "{{ memcapture_bin_path }}"
   become: yes
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
   ignore_errors: true

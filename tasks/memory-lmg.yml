@@ -54,12 +54,12 @@
     (memcapture_install is defined and memcapture_install|bool) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - name: Check if LiME directory is present
-  stat: path={{ bin_path }}/LiME
+  stat: path={{ memcapture_bin_path }}/LiME
   register: gitlime
 - name: Lime git clone
   git:
     repo: https://github.com/504ensicsLabs/LiME.git
-    dest: "{{ bin_path }}/LiME"
+    dest: "{{ memcapture_bin_path }}/LiME"
     version: "{{ memcapture_lime_version | default('9bd146ae54ef9f04acc09c44544aaf66aa8566d1') }}"
   when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download|bool)
   ignore_errors: true
@@ -70,7 +70,7 @@
     - name: Lime fetch - alternate
       get_url:
         url: https://github.com/504ensicsLabs/LiME/archive/master.zip
-        dest: "{{ bin_path }}/LiME.zip"
+        dest: "{{ memcapture_bin_path }}/LiME.zip"
         mode: '0600'
     - name: Ensure unzip is present
       package:
@@ -80,23 +80,23 @@
       until: pkg_result is success
     - name: unarchive LiME
       unarchive:
-        src: "{{ bin_path }}/LiME.zip"
-        dest: "{{ bin_path }}"
-        creates: "{{ bin_path }}/LiME/src/Makefile"
+        src: "{{ memcapture_bin_path }}/LiME.zip"
+        dest: "{{ memcapture_bin_path }}"
+        creates: "{{ memcapture_bin_path }}/LiME/src/Makefile"
     - name: symlink usual path
       file:
-        src: "{{ bin_path }}/LiME-master"
-        dest: "{{ bin_path }}/LiME"
+        src: "{{ memcapture_bin_path }}/LiME-master"
+        dest: "{{ memcapture_bin_path }}/LiME"
         state: link
   when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download|bool) and clonelime.failed
 
 - name: Check if volatility source is present
-  stat: path={{ bin_path }}/volatility
+  stat: path={{ memcapture_bin_path }}/volatility
   register: gitvol
 - name: Volatility git clone
   git:
     repo: https://github.com/volatilityfoundation/volatility
-    dest: "{{ bin_path }}/volatility"
+    dest: "{{ memcapture_bin_path }}/volatility"
     version: "{{ memcapture_volatility_version | default('f1ac0b1e90cf486da2a37cffb3448b208943d226') }}"
   when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download|bool)
   ignore_errors: true
@@ -107,7 +107,7 @@
     - name: Volatility fetch - alternate
       get_url:
         url: https://downloads.volatilityfoundation.org/releases/2.6/volatility-2.6.zip
-        dest: "{{ bin_path }}/volatility-2.6.zip"
+        dest: "{{ memcapture_bin_path }}/volatility-2.6.zip"
         mode: '0600'
     - name: Ensure unzip is present
       package:
@@ -117,24 +117,24 @@
       until: pkg_result is success
     - name: unarchive Volatility
       unarchive:
-        src: "{{ bin_path }}/volatility-2.6.zip"
-        dest: "{{ bin_path }}"
-        creates: "{{ bin_path }}/volatility-master/setup.py"
+        src: "{{ memcapture_bin_path }}/volatility-2.6.zip"
+        dest: "{{ memcapture_bin_path }}"
+        creates: "{{ memcapture_bin_path }}/volatility-master/setup.py"
     - name: symlink usual path
       file:
-        src: "{{ bin_path }}/volatility-master"
-        dest: "{{ bin_path }}/volatility"
+        src: "{{ memcapture_bin_path }}/volatility-master"
+        dest: "{{ memcapture_bin_path }}/volatility"
         state: link
   when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download|bool) and clonevol.failed
 
 - name: Check if LMG directory is present
-  stat: path={{ bin_path }}/lmg
+  stat: path={{ memcapture_bin_path }}/lmg
   register: gitlmg
 #    repo=https://github.com/juju4/lmg
 - name: lmg git clone
   git:
     repo: https://github.com/halpomeranz/lmg
-    dest: "{{ bin_path }}/lmg"
+    dest: "{{ memcapture_bin_path }}/lmg"
     version: "{{ memcapture_lmg_version | default('2cef0e6b67b30c595f73a4f8c28e3cb862f69189') }}"
     update: no
   when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download|bool)
@@ -146,7 +146,7 @@
     - name: LMG fetch - alternate
       get_url:
         url: https://github.com/halpomeranz/lmg/archive/master.zip
-        dest: "{{ bin_path }}/LMG.zip"
+        dest: "{{ memcapture_bin_path }}/LMG.zip"
         mode: '0600'
     - name: Ensure unzip is present
       package:
@@ -156,50 +156,50 @@
       until: pkg_result is success
     - name: unarchive LMG
       unarchive:
-        src: "{{ bin_path }}/LMG.zip"
-        dest: "{{ bin_path }}"
-        creates: "{{ bin_path }}/lmg-master/src/Makefile"
+        src: "{{ memcapture_bin_path }}/LMG.zip"
+        dest: "{{ memcapture_bin_path }}"
+        creates: "{{ memcapture_bin_path }}/lmg-master/src/Makefile"
     - name: symlink usual path
       file:
-        src: "{{ bin_path }}/lmg-master"
-        dest: "{{ bin_path }}/lmg"
+        src: "{{ memcapture_bin_path }}/lmg-master"
+        dest: "{{ memcapture_bin_path }}/lmg"
         state: link
   when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download|bool) and clonelmg.failed
 
 - name: CPU included in KVER
   replace:
-    dest: "{{ bin_path }}/lmg/lmg"
+    dest: "{{ memcapture_bin_path }}/lmg/lmg"
     regexp: 'LIMEMOD=\$LIMEDIR/lime-\$KVER-\$CPU.ko'
     replace: 'LIMEMOD=$LIMEDIR/lime-$KVER.ko'
     backup: yes
   when: (memcapture_install is defined and memcapture_install)
 - name: update volatility dir
   replace:
-    dest: "{{ bin_path }}/lmg/lmg"
+    dest: "{{ memcapture_bin_path }}/lmg/lmg"
     regexp: 'VOLDIR=\$\(dirname \$\(find \$BUILDDIR -name module.c\) 2\>/dev/null\)'
-    replace: 'VOLDIR={{ bin_path }}/volatility'
+    replace: 'VOLDIR={{ memcapture_bin_path }}/volatility'
     backup: yes
   when: (memcapture_install is defined and memcapture_install)
 
 - name: Check if dwarfdump present for LMG
-  command: "ls {{ bin_path }}/lmg"
+  command: "ls {{ memcapture_bin_path }}/lmg"
   changed_when: false
   register: lmgdir
 - debug: var=lmgdir
 - name: Check if dwarfdump-i686 is present
-  stat: path={{ bin_path }}/lmg/dwarfdump/dwarfdump-i686
+  stat: path={{ memcapture_bin_path }}/lmg/dwarfdump/dwarfdump-i686
   register: dwarf
 ## Note: if nfs/samba mount, owner/perms might not be preserved so ignore those errors
 - name: Extract dwarfdump utilities
   unarchive:
-    src: "{{ bin_path }}/lmg/static-dwarfdump.tgz"
-    dest: "{{ bin_path }}/lmg"
+    src: "{{ memcapture_bin_path }}/lmg/static-dwarfdump.tgz"
+    dest: "{{ memcapture_bin_path }}/lmg"
   when: not dwarf.stat.exists and (memcapture_download is defined and memcapture_download|bool)
   ignore_errors: true
 
 - name: update module.dwarf build path in lmg
   replace:
-    dest: "{{ bin_path }}/lmg/lmg"
+    dest: "{{ memcapture_bin_path }}/lmg/lmg"
     regexp: 'cd \$VOLDIR$'
     replace: 'cd $VOLDIR/tools/linux'
     backup: yes
@@ -208,11 +208,11 @@
   stat: path={{ dst_path }}/lmg/capture
   register: memcapture
 - name: Take memory capture (lmg/lime)
-#  command: "bash lmg -y chdir={{ bin_path }}/lmg"
-  command: "bash lmg -y -d {{ dst_path }} -B {{ bin_path }}/LiME/src chdir={{ bin_path }}/lmg"
+#  command: "bash lmg -y chdir={{ memcapture_bin_path }}/lmg"
+  command: "bash lmg -y -d {{ dst_path }} -B {{ memcapture_bin_path }}/LiME/src chdir={{ memcapture_bin_path }}/lmg"
   environment:
     TARGETDIR: "{{ dst_path }}"
-    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ bin_path }}/lmg/dwarfdump"
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ memcapture_bin_path }}/lmg/dwarfdump"
   become: yes
   when: not memcapture.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
   ignore_errors: true
@@ -257,15 +257,15 @@
     - debug: var=ansible_kernel
     - name: recreate volatility profile archive
       command: >
-        zip {{ bin_path }}/volatility/volatility/plugins/overlays/linux/{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip
+        zip {{ memcapture_bin_path }}/volatility/volatility/plugins/overlays/linux/{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip
         volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }}
       args:
-        chdir: "{{ bin_path }}"
+        chdir: "{{ memcapture_bin_path }}"
         creates: "{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip"
 
     - name: check profile is valid
       command: >
-        python {{ bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime
+        python {{ memcapture_bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime
             --profile {{ fname }}-profile imageinfo
       args:
         chdir: "{{ dst_path }}/capture/{{ fname }}"

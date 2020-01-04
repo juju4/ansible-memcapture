@@ -3,7 +3,7 @@
 
 - name: Set fact linpmem_archive
   set_fact:
-    linpmem_archive: "{{ bin_path }}/{{ memcapture_linpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
+    linpmem_archive: "{{ memcapture_bin_path }}/{{ memcapture_linpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
 - name: Set fact linpmem_bin...
   set_fact:
     linpmem_bin: "{{ linpmem_archive | regex_replace('.(gz|tgz)$', '') }}"
@@ -34,9 +34,9 @@
   when: not linpmem.stat.exists and (memcapture_download is defined and memcapture_download|bool)
 
 - name: Extract linpmem
-  command: "gunzip {{ linpmem_archive }} chdir={{ bin_path }}"
+  command: "gunzip {{ linpmem_archive }} chdir={{ memcapture_bin_path }}"
 ## require unzip to be installed
-#  unarchive: src="{{ bin_path }}/{{ linpmem_archive }}" dest="{{ bin_path }}" copy=no
+#  unarchive: src="{{ memcapture_bin_path }}/{{ linpmem_archive }}" dest="{{ memcapture_bin_path }}" copy=no
   when: not linpmem.stat.exists and memcapture_linpmem_url.find('.tgz') != -1
 
 - name: Install linpmem locally
@@ -61,7 +61,7 @@
   command: "{{ linpmem_bin }} -o {{ linpmem_capture }}"
   #command: "{{ linpmem_bin }} -dd -o {{ linpmem_capture }}"
   args:
-    chdir: "{{ bin_path }}"
+    chdir: "{{ memcapture_bin_path }}"
   become: yes
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
   ignore_errors: true

@@ -39,7 +39,7 @@ you probably want to review variables
 
 Example of execution
 ```
-$ time ansible-playbook -i inventory -e TARGETIP=myhost -e ROLE=memcapture -e memcapture_capture=true -e memcapture_pull=true -e dst_mount=/opt/tmp/cases -e bin_path=/opt/tmp/ir-bin roles/run_role.yml
+$ time ansible-playbook -i inventory -e TARGETIP=myhost -e ROLE=memcapture -e memcapture_capture=true -e memcapture_pull=true -e dst_mount=/opt/tmp/cases -e memcapture_bin_path=/opt/tmp/ir-bin roles/run_role.yml
 ```
 
 Volatility profile is generated in the following cases:
@@ -60,10 +60,10 @@ memcapture_download: true
 memcapture_build: true
 memcapture_install: true
 
-bin_path: "/tmp/ir-bin"
+memcapture_bin_path: "/tmp/ir-bin"
 ```
 
-* bin_path: can be a network path or removable media. If local and 
+* memcapture_bin_path: can be a network path or removable media. If local and
   download/build/install is enabled, the role will add everything necessary.
   Of course, from a forensic perspective, better if everything is setup either
   before locally (but can be altered) or a network read-only share
