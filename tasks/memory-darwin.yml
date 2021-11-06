@@ -24,7 +24,7 @@
 - name: Debug | osxpmem binary
   debug: var=osxpmem_bin
 - name: extract osxpmem
-  unzip:
+  unarchive:
     src: "{{ osxpmem_archive }}"
     dest: "{{ memcapture_bin_path }}"
     mode: "0700"
