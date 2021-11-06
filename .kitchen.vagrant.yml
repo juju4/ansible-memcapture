@@ -10,20 +10,20 @@ provisioner:
   name: ansible_playbook
   roles_path: ../
   hosts: all
-#  ansible_verbose: true
+  # ansible_verbose: true
   ansible_verbose: false
   ansible_verbosity: 3
   ansible_extra_flags: <%= ENV['ANSIBLE_EXTRA_FLAGS'] %>
-## only default defined ansible repo is for ubuntu
-## https://github.com/neillturner/kitchen-ansible/blob/master/provisioner_options.md
+  ## only default defined ansible repo is for ubuntu
+  ## https://github.com/neillturner/kitchen-ansible/blob/master/provisioner_options.md
   enable_yum_epel: true
-#  name: chef_solo
+  # name: chef_solo
 
 platforms:
   - name: ubuntu-18.04
   - name: ubuntu-16.04
   - name: ubuntu-14.04
-#  - name: ubuntu-12.04
+  # - name: ubuntu-12.04
   - name: centos/7
   - name: centos/6
 

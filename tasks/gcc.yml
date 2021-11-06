@@ -15,11 +15,11 @@
   stat: path=/usr/bin/gcc-4.8
   register: gcc4
 
-#- debug: var=gcc
-#- debug: var=gcc5
+# - debug: var=gcc
+# - debug: var=gcc5
 
 - name: Ubuntu xenial | update default config to gcc-5 for gcc
-#  command: "update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5"
+  # command: "update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /usr/bin/g++ g++ /usr/bin/g++-5"
   command: "update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60"
   when: >
     (not gcc.stat.exists or (gcc.stat.lnk_source is defined and gcc.stat.lnk_source == "/usr/bin/None")) and

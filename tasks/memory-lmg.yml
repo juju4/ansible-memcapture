@@ -208,7 +208,7 @@
   stat: path={{ dst_path }}/lmg/capture
   register: memcapture
 - name: Take memory capture (lmg/lime)
-#  command: "bash lmg -y chdir={{ memcapture_bin_path }}/lmg"
+  # command: "bash lmg -y chdir={{ memcapture_bin_path }}/lmg"
   command: "bash lmg -y -d {{ dst_path }} -B {{ memcapture_bin_path }}/LiME/src chdir={{ memcapture_bin_path }}/lmg"
   environment:
     TARGETDIR: "{{ dst_path }}"
@@ -231,7 +231,7 @@
       ignore_errors: true
     - name: Set fact output directory name
       set_fact:
-        #fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
+        # fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
         fname: "{{ lscapture.stdout }}"
   when: ansible_distribution != 'Alpine'
 - block:
@@ -244,7 +244,7 @@
       ignore_errors: true
     - name: Set fact output directory name
       set_fact:
-        #fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
+        # fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
         fname: "{{ lscapture.stdout }}"
   when: ansible_distribution == 'Alpine'
 

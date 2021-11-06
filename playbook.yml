@@ -1,9 +1,11 @@
+---
+
 - hosts: all
   sudo: true
   vars:
     - tmp_path: /tmp
   tasks:
-## https://github.com/google/rekall/releases
+    ## https://github.com/google/rekall/releases
     - stat: path={{ tmp_path }}/linpmem_2.0.1.gz
       register: linpmem
     - name: Linpmem download

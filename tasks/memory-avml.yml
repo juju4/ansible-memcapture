@@ -15,95 +15,95 @@
   delegate_to: localhost
 
 - block:
-  - name: Ensure ansible dependencies are present
-    package:
-      name: libselinux-python
-      state: present
-    register: pkg_result
-    until: pkg_result is success
-    when: memcapture_install and ansible_os_family == "RedHat"
+    - name: Ensure ansible dependencies are present
+      package:
+        name: libselinux-python
+        state: present
+      register: pkg_result
+      until: pkg_result is success
+      when: memcapture_install and ansible_os_family == "RedHat"
 
-  - name: Check if avml archive is present
-    stat:
-      path: "{{ avml_bin }}"
-    register: avml
-  - name: Microsoft Avml download
-    get_url:
-      url: "{{ memcapture_avml_url }}"
-      dest: "{{ avml_archive }}"
-      mode: '0400'
-    register: dl_result
-    until: dl_result is success
-    when: not avml.stat.exists and (memcapture_download is defined and memcapture_download)
+    - name: Check if avml archive is present
+      stat:
+        path: "{{ avml_bin }}"
+      register: avml
+    - name: Microsoft Avml download
+      get_url:
+        url: "{{ memcapture_avml_url }}"
+        dest: "{{ avml_archive }}"
+        mode: '0400'
+      register: dl_result
+      until: dl_result is success
+      when: not avml.stat.exists and (memcapture_download is defined and memcapture_download)
 
-  - name: Extract avml
-    unarchive:
-      src: "{{ avml_archive }}"
-      dest: "{{ memcapture_bin_path }}"
-      remote_src: true
-    when: not avml.stat.exists
+    - name: Extract avml
+      unarchive:
+        src: "{{ avml_archive }}"
+        dest: "{{ memcapture_bin_path }}"
+        remote_src: true
+      when: not avml.stat.exists
 
-  # No musl* packages on centos7, only starting with Fedora29
-  - name: Ensure avml build dependencies
-    package:
-      name: "{{ memory_avml_deps }}"
-      state: present
-    become: yes
-    register: pkg_result
-    until: pkg_result is success
-    when:
-      - memcapture_install is defined
-      - memcapture_install|bool
-      - ansible_os_family == "Debian"
+    # No musl* packages on centos7, only starting with Fedora29
+    - name: Ensure avml build dependencies
+      package:
+        name: "{{ memory_avml_deps }}"
+        state: present
+      become: yes
+      register: pkg_result
+      until: pkg_result is success
+      when:
+        - memcapture_install is defined
+        - memcapture_install|bool
+        - ansible_os_family == "Debian"
 
-  - name: Download Rustup
-    get_url:
-      url: https://sh.rustup.rs
-      dest: "{{ memcapture_bin_path }}/rustup.sh"
-      mode: '0600'
-    when: (memcapture_download is defined and memcapture_download|bool)
+    - name: Download Rustup
+      get_url:
+        url: https://sh.rustup.rs
+        dest: "{{ memcapture_bin_path }}/rustup.sh"
+        mode: '0600'
+      when: (memcapture_download is defined and memcapture_download|bool)
 
-  - name: Install rustup
-    command: sh rustup.sh -y
-    args:
-      chdir: "{{ memcapture_bin_path }}"
-      creates: /root/.cargo/env
-    when: >
-      (memcapture_install is defined and memcapture_install|bool)
+    - name: Install rustup
+      command: sh rustup.sh -y
+      args:
+        chdir: "{{ memcapture_bin_path }}"
+        creates: /root/.cargo/env
+      when: >
+        (memcapture_install is defined and memcapture_install|bool)
 
-  - name: Add the MUSL target for Rust
-    command: rustup target add x86_64-unknown-linux-musl
-    args:
-      creates: /root/.cargo/registry/src/github.com-1ecc6299db9ec823/libc-0.2.58/src/unix/notbsd/linux/musl
-    environment:
-      PATH: /root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    - name: Add the MUSL target for Rust
+      command: rustup target add x86_64-unknown-linux-musl
+      args:
+        creates: /root/.cargo/registry/src/github.com-1ecc6299db9ec823/libc-0.2.58/src/unix/notbsd/linux/musl
+      environment:
+        PATH: /root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-  - name: Build avml
-    command: cargo build --release --target x86_64-unknown-linux-musl
-    args:
-      chdir: "{{ memcapture_bin_path }}/avml-{{ memcapture_avml_v }}"
-      creates: "{{ avml_bin }}"
-    environment:
-      PATH: /root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    - name: Build avml
+      command: cargo build --release --target x86_64-unknown-linux-musl
+      args:
+        chdir: "{{ memcapture_bin_path }}/avml-{{ memcapture_avml_v }}"
+        creates: "{{ avml_bin }}"
+      environment:
+        PATH: /root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-  #- name: check appropriate permissions
-  #  file:
-  #    path: "{{ avml_bin }}"
-  #    mode: '0700'
+    # - name: check appropriate permissions
+    #   file:
+    #     path: "{{ avml_bin }}"
+    #     mode: '0700'
 
-  - name: Install avml locally
-    copy:
-      src: "{{ avml_bin }}"
-      dest: /usr/local/bin/
-      mode: '0700'
-      remote_src: true
-    when: memcapture_install
+    - name: Install avml locally
+      copy:
+        src: "{{ avml_bin }}"
+        dest: /usr/local/bin/
+        mode: '0700'
+        remote_src: true
+      when: memcapture_install
 
-  - name: avml | Recover file on orchestrator
-    fetch:
-      src: "{{ avml_bin }}"
-      dest: "{{ orchestrator_files_archives }}/"
-      flat: yes
+    - name: avml | Recover file on orchestrator
+      fetch:
+        src: "{{ avml_bin }}"
+        dest: "{{ orchestrator_files_archives }}/"
+        flat: yes
   when: not avmlbin.stat.exists
 
 - name: avml | Recover file on orchestrator

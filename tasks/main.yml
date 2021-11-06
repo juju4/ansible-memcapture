@@ -33,8 +33,8 @@
 
 # capture memory
 ## https://docs.google.com/presentation/d/1savcvqRcMXpRyVrybWvbHGbJTgjInZcwLB5VokJdKa8/edit#slide=id.g26dcd0ccb_030
-#"c:\Program Files\Rekall\winpmem_1.6.0.exe" -e - | c:\Users\mic\Desktop\ncat.exe 172.16.21.93 8001  --ssl
-#ncat -l 8001 --ssl -v > myimage.elf
+# "c:\Program Files\Rekall\winpmem_1.6.0.exe" -e - | c:\Users\mic\Desktop\ncat.exe 172.16.21.93 8001  --ssl
+# ncat -l 8001 --ssl -v > myimage.elf
 
 - debug: var=memcapture_use_linpmem
 - include: memory-linpmem.yml
@@ -82,24 +82,24 @@
 
 - debug: var=memcapture_pull
 - block:
-#    - name: archive output content
-## v2.3
-#      archive: "src={{ dst_path }} dest={{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
-#      command: >
-#        tar czf {{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz {{ dst_path }}/
-#      args:
-#        creates: "{{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
-## 2.6+ for net_get
+    # - name: archive output content
+    ## v2.3
+    #   archive: "src={{ dst_path }} dest={{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
+    #   command: >
+    #     tar czf {{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz {{ dst_path }}/
+    #   args:
+    #     creates: "{{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
+    ## 2.6+ for net_get
     - name: retrieve output dir to orchestrator
       net_get:
         src: "{{ item }}"
         dest: "{{ memcapture_pulldir }}/"
         protocol: sftp
-## Note: too memory consuming to transfer with python/base64
-#      fetch: "src={{ item }} dest={{ memcapture_pulldir }}/"
-#      with_items:
-#        - "{{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
+        ## Note: too memory consuming to transfer with python/base64
+        # fetch: "src={{ item }} dest={{ memcapture_pulldir }}/"
       with_fileglob:
         - "{{ dst_path }}/*"
+      # with_items:
+      #   - "{{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
       when: ansible_version.full is version_compare('2.6', '>=')
   when: memcapture_pull is defined and memcapture_pull|bool

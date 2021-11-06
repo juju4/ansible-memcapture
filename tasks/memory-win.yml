@@ -41,13 +41,14 @@
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
 
 - name: retrieve output hash
-  stat: path="{{ winpmem_capture }}"
+  stat:
+    path: "{{ winpmem_capture }}"
   register: outputstat
 - debug: var=outputstat.stat.checksum
 
 ## https://docs.google.com/presentation/d/1savcvqRcMXpRyVrybWvbHGbJTgjInZcwLB5VokJdKa8/edit#slide=id.g26dcd0ccb_030
-#"c:\Program Files\Rekall\winpmem_1.6.0.exe" -e - | c:\Users\mic\Desktop\ncat.exe 172.16.21.93 8001  --ssl
-#ncat -l 8001 --ssl -v > myimage.elf
+# "c:\Program Files\Rekall\winpmem_1.6.0.exe" -e - | c:\Users\mic\Desktop\ncat.exe 172.16.21.93 8001  --ssl
+# ncat -l 8001 --ssl -v > myimage.elf
 
 ## https://technet.microsoft.com/en-us/sysinternals/bb897438.aspx
 - name: force sync aka write to disk

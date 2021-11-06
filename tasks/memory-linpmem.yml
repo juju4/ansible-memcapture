@@ -35,8 +35,8 @@
 
 - name: Extract linpmem
   command: "gunzip {{ linpmem_archive }} chdir={{ memcapture_bin_path }}"
-## require unzip to be installed
-#  unarchive: src="{{ memcapture_bin_path }}/{{ linpmem_archive }}" dest="{{ memcapture_bin_path }}" copy=no
+  ## require unzip to be installed
+  # unarchive: src="{{ memcapture_bin_path }}/{{ linpmem_archive }}" dest="{{ memcapture_bin_path }}" copy=no
   when: not linpmem.stat.exists and memcapture_linpmem_url.find('.tgz') != -1
 
 - name: Install linpmem locally
@@ -59,7 +59,7 @@
 
 - name: memory capture (linpmem)
   command: "{{ linpmem_bin }} -o {{ linpmem_capture }}"
-  #command: "{{ linpmem_bin }} -dd -o {{ linpmem_capture }}"
+  # command: "{{ linpmem_bin }} -dd -o {{ linpmem_capture }}"
   args:
     chdir: "{{ memcapture_bin_path }}"
   become: yes
@@ -80,11 +80,11 @@
   with_items:
     - { c: "cat /proc/meminfo > {{ dst_path }}/{{ prefix }}-proc-meminfo",
         t: "{{ dst_path }}/{{ prefix }}-proc-meminfo"
-      }
+    }
     - { c: "cat /proc/iomem > {{ dst_path }}/{{ prefix }}-proc-iomem", t: "{{ dst_path }}/{{ prefix }}-proc-iomem" }
     - { c: "cat /proc/mtrr > {{ dst_path }}/{{ prefix }}-proc-mtrr", t: "{{ dst_path }}/{{ prefix }}-proc-mtrr" }
     - { c: "readelf -a /proc/kcore > {{ dst_path }}/{{ prefix }}-proc-kcore",
         t: "{{ dst_path }}/{{ prefix }}-proc-kcore"
-      }
+    }
   ignore_errors: true
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)

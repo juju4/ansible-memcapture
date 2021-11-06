@@ -1,13 +1,13 @@
 ---
 
 memory_lmg_deps:
-    - git
-    - zip
-    - make
-    - gcc
-    - linux-generic
-    - linux-headers-{{ ansible_kernel }}
-    - binutils
+  - git
+  - zip
+  - make
+  - gcc
+  - linux-generic
+  - linux-headers-{{ ansible_kernel }}
+  - binutils
 
 memcapture_cc: gcc-5
 

@@ -1,12 +1,12 @@
 ---
 
 memory_lmg_deps:
-    - git
-    - zip
-    - make
-    - gcc
-    - linux-headers
-    - binutils
+  - git
+  - zip
+  - make
+  - gcc
+  - linux-headers
+  - binutils
 
 memcapture_cc: gcc
 
