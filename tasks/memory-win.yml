@@ -29,7 +29,8 @@
   win_shell: Get-Process 'Secure System' -ErrorAction SilentlyContinue
   register: vsm
 
-- debug: var=vsm
+- name: Debug | Virtual Secure Mode
+  debug: var=vsm
 
 - name: Wait user confirmation before starting memory capture
   pause:
@@ -37,20 +38,20 @@
 ## FIXME! through powershell ? (ansible 'script:')
 - name: Do memory capture (winpmem)
   raw: "{{ winpmem_bin }} -o {{ winpmem_capture }}"
-  register: docapture
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
+  notify:
+    - win disk sync
+
+- name: Flush handlers
+  meta: flush_handlers
 
 - name: retrieve output hash
   stat:
     path: "{{ winpmem_capture }}"
   register: outputstat
-- debug: var=outputstat.stat.checksum
+- name: Debug | output file hash
+  debug: var=outputstat.stat.checksum
 
 ## https://docs.google.com/presentation/d/1savcvqRcMXpRyVrybWvbHGbJTgjInZcwLB5VokJdKa8/edit#slide=id.g26dcd0ccb_030
 # "c:\Program Files\Rekall\winpmem_1.6.0.exe" -e - | c:\Users\mic\Desktop\ncat.exe 172.16.21.93 8001  --ssl
 # ncat -l 8001 --ssl -v > myimage.elf
-
-## https://technet.microsoft.com/en-us/sysinternals/bb897438.aspx
-- name: force sync aka write to disk
-  raw: "{{ memcapture_bin_path }}\\sync.exe -r -e"
-  when: docapture.changed

@@ -10,11 +10,16 @@
   include_vars: "Alpine.yml"
   when: ansible_distribution == 'Alpine'
 
-- debug: var=memcapture_use_linpmem
-- debug: var=memcapture_use_fmem
-- debug: var=memcapture_use_lmg
-- debug: var=memcapture_use_avml
-- debug: var=memcapture_capture
+- name: Debug | var memcapture_use_linpmem
+  debug: var=memcapture_use_linpmem
+- name: Debug | var memcapture_use_fmem
+  debug: var=memcapture_use_fmem
+- name: Debug | var memcapture_use_lmg
+  debug: var=memcapture_use_lmg
+- name: Debug | var memcapture_use_avml
+  debug: var=memcapture_use_avml
+- name: Debug | var memcapture_capture
+  debug: var=memcapture_capture
 
 - name: check appropriate directories exist
   file: dest={{ item }} state=directory mode=0700
@@ -36,7 +41,6 @@
 # "c:\Program Files\Rekall\winpmem_1.6.0.exe" -e - | c:\Users\mic\Desktop\ncat.exe 172.16.21.93 8001  --ssl
 # ncat -l 8001 --ssl -v > myimage.elf
 
-- debug: var=memcapture_use_linpmem
 - include: memory-linpmem.yml
   when: >
     ansible_system == 'Linux' and ansible_architecture == 'x86_64' and
@@ -69,7 +73,8 @@
       register: lsout
       changed_when: false
       ignore_errors: true
-    - debug: var=lsout.stdout_lines
+    - name: Debug | output files listing
+      debug: var=lsout.stdout_lines
   when: ansible_system == 'Linux' and ansible_distribution != 'Alpine'
 - block:
     - name: Ensure we have output files
@@ -77,10 +82,12 @@
       register: lsout2
       changed_when: false
       ignore_errors: true
-    - debug: var=lsout2.stdout_lines
+    - name: Debug | output files listing
+      debug: var=lsout2.stdout_lines
   when: ansible_system != 'Linux' or ansible_distribution == 'Alpine'
 
-- debug: var=memcapture_pull
+- name: Debug | var memcapture_pull
+  debug: var=memcapture_pull
 - block:
     # - name: archive output content
     ## v2.3

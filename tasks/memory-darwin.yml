@@ -2,7 +2,7 @@
 
 - name: Set fact osxpmem_archive
   set_fact:
-    osxpmem_archive: "{{ memcapture_bin_path }}/{{ memcapture_osxpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
+    osxpmem_archive: "{{ memcapture_bin_path }}/{{ memcapture_osxpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
 - name: Set fact osxpmem_bin...
   set_fact:
     osxpmem_bin: "{{ memcapture_bin_path }}/osxpmem.app/osxpmem"
@@ -21,20 +21,20 @@
   until: dl_result is success
   when: not osxpmem.stat.exists and memcapture_download|bool
 
-- debug: var=osxpmem_bin
+- name: Debug | osxpmem binary
+  debug: var=osxpmem_bin
 - name: extract osxpmem
-  ## FIXME!
-  # unarchive:
-  #   src: "{{ osxpmem_archive }}"
-  #   dest: "{{ memcapture_bin_path }}"
-  #   mode: "0700"
-  #   creates: "{{ osxpmem_bin }}"
-  command: "unzip {{ osxpmem_archive }}"
+  unzip:
+    src: "{{ osxpmem_archive }}"
+    dest: "{{ memcapture_bin_path }}"
+    mode: "0700"
+    creates: "{{ osxpmem_bin }}"
   args:
     chdir: "{{ memcapture_bin_path }}"
     creates: "{{ osxpmem_bin }}"
 
-- debug: var=harden_darwin_santa_mode
+- name: Debug | Google Santa mode
+  debug: var=harden_darwin_santa_mode
 - block:
     - name: ensure config set to monitor mode
       osx_defaults:
@@ -109,10 +109,11 @@
           failed_when: "'Invalid profile' in checkprofile.stderr"
           ignore_errors: true
           when: memcapture_osxpmem_ext == 'raw'
-        - debug: var=checkprofile
-        ## to validate with rekall
-        # rekall convert_profile vol-profile.zip rekall-profile.json
-        # rekall --profile rekall-profile.json -f mem.aff4 psaux
+        - name: Debug | check profile output
+          debug: var=checkprofile
+          ## to validate with rekall
+          # rekall convert_profile vol-profile.zip rekall-profile.json
+          # rekall --profile rekall-profile.json -f mem.aff4 psaux
 
       when: kdk.stat.exists
 
@@ -126,6 +127,9 @@
       when: (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
 
 - name: retrieve output hash
-  stat: path="{{ osxpmem_capture }}" checksum_algorithm=sha256
+  stat:
+    path: "{{ osxpmem_capture }}"
+    checksum_algorithm: sha256
   register: outputstat
-- debug: var=outputstat.stat.checksum
+- name: Debug | file output hash
+  debug: var=outputstat.stat.checksum

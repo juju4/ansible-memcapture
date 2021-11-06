@@ -8,7 +8,7 @@
     (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
 ## Note: seems distribution are not keeping their linux-headers for all base kernel...
 ##       Ubuntu12.04 "No package matching 'linux-headers-3.19.0-30-generic' is available"
-  ignore_errors: true
+  failed_when: false
   register: pkg_result
   until: pkg_result is success
 
@@ -39,9 +39,11 @@
   when: >
     (memcapture_install is defined and memcapture_install) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
-- debug: var=d1.stdout_lines
+- name: Debug | kernel src directories
+  debug: var=d1.stdout_lines
   when: (memcapture_install is defined and memcapture_install|bool)
-- debug: var=d2.stdout_lines
+- name: Debug | kernel-headers packages
+  debug: var=d2.stdout_lines
   when: (memcapture_install is defined and memcapture_install|bool)
 - name: Ensure appropriate symlink to latest src/kernels in order to build module
   file:
@@ -49,7 +51,7 @@
     dest: "/lib/modules/{{ ansible_kernel }}/build"
     state: link
   become: yes
-  ignore_errors: true
+  failed_when: false
   when: >
     (memcapture_install is defined and memcapture_install|bool) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
@@ -185,7 +187,8 @@
   command: "ls {{ memcapture_bin_path }}/lmg"
   changed_when: false
   register: lmgdir
-- debug: var=lmgdir
+- name: Debug | lmg directory listing
+  debug: var=lmgdir
 - name: Check if dwarfdump-i686 is present
   stat: path={{ memcapture_bin_path }}/lmg/dwarfdump/dwarfdump-i686
   register: dwarf
@@ -195,7 +198,7 @@
     src: "{{ memcapture_bin_path }}/lmg/static-dwarfdump.tgz"
     dest: "{{ memcapture_bin_path }}/lmg"
   when: not dwarf.stat.exists and (memcapture_download is defined and memcapture_download|bool)
-  ignore_errors: true
+  failed_when: false
 
 - name: update module.dwarf build path in lmg
   replace:
@@ -251,10 +254,12 @@
 - name: retrieve output hash
   stat: path="{{ dst_path }}/capture/{{ fname }}/{{ fname }}-memory.lime" checksum_algorithm=sha256
   register: outputstat
-- debug: var=outputstat.stat.checksum
+- name: Debug | output file hash
+  debug: var=outputstat.stat.checksum
 
 - block:
-    - debug: var=ansible_kernel
+    - name: Debug | kernel
+      debug: var=ansible_kernel
     - name: recreate volatility profile archive
       command: >
         zip {{ memcapture_bin_path }}/volatility/volatility/plugins/overlays/linux/{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip
@@ -271,14 +276,16 @@
         chdir: "{{ dst_path }}/capture/{{ fname }}"
       changed_when: false
       register: checkprofile
-      failed_when: "'Invalid profile' in checkprofile.stderr"
-      ignore_errors: true
-    - debug: var=checkprofile
+      # failed_when: "'Invalid profile' in checkprofile.stderr"
+      failed_when: false
+    - name: Debug | profile check output
+      debug: var=checkprofile
   when: >
     not (ansible_virtualization_type is defined and
           (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker")
         ) and
     not (ansible_distribution_major_version == "6" and ansible_virtualization_type == "kvm")
 
-- debug: var=lmgout.stdout_lines
+- name: Debug | lmg output
+  debug: var=lmgout.stdout_lines
   when: lmgout is defined and lmgout.rc is defined and lmgout.rc != 0

@@ -3,7 +3,7 @@
 
 - name: Set fact linpmem_archive
   set_fact:
-    linpmem_archive: "{{ memcapture_bin_path }}/{{ memcapture_linpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
+    linpmem_archive: "{{ memcapture_bin_path }}/{{ memcapture_linpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
 - name: Set fact linpmem_bin...
   set_fact:
     linpmem_bin: "{{ linpmem_archive | regex_replace('.(gz|tgz)$', '') }}"
@@ -64,17 +64,18 @@
     chdir: "{{ memcapture_bin_path }}"
   become: yes
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
-  ignore_errors: true
+  failed_when: false
 
 - name: retrieve output hash
   stat:
     path: "{{ linpmem_capture }}"
     checksum_algorithm: sha256
   register: outputstat
-- debug: var=outputstat.stat.checksum
+- name: Debug | file output hash
+  debug: var=outputstat.stat.checksum
 
 - name: Linpmem | get debug info
-  shell: "{{ item.c }}"
+  shell: "{{ item.c }}"  # noqa command-instead-of-shell
   args:
     creates: "{{ item.t }}"
   with_items:
@@ -86,5 +87,5 @@
     - { c: "readelf -a /proc/kcore > {{ dst_path }}/{{ prefix }}-proc-kcore",
         t: "{{ dst_path }}/{{ prefix }}-proc-kcore"
     }
-  ignore_errors: true
+  failed_when: false
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
