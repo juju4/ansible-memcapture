@@ -1,5 +1,3 @@
-[![Build Status - Master](https://travis-ci.org/juju4/ansible-memcapture.svg?branch=master)](https://travis-ci.org/juju4/ansible-memcapture)
-[![Build Status - Devel](https://travis-ci.org/juju4/ansible-memcapture.svg?branch=devel)](https://travis-ci.org/juju4/ansible-memcapture/branches)
 # Memory capture ansible role
 
 A simple ansible role to install and execute live memory capture tools.
