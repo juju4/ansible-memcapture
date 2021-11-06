@@ -18,5 +18,3 @@ describe file('/tmp/ir-bin/lmg/lmg') do
   it { should be_file }
   it { should be_owned_by 'root' }
 end
-
-

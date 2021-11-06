@@ -23,4 +23,3 @@ describe file('/tmp/ir-bin/LiME/src/lime.o') do
   it { should be_file }
   it { should be_owned_by 'root' }
 end
-
