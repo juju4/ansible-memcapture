@@ -30,9 +30,6 @@
     mode: "0700"
     creates: "{{ osxpmem_bin }}"
     remote_src: true
-  args:
-    chdir: "{{ memcapture_bin_path }}"
-    creates: "{{ osxpmem_bin }}"
 
 - name: Debug | Google Santa mode
   debug: var=harden_darwin_santa_mode
