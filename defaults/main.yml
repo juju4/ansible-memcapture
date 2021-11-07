@@ -42,9 +42,9 @@ memcapture_use_fmem: true
 memcapture_use_lmg: true
 memcapture_use_avml: true
 
-memcapture_winpmem_v: 3.3.rc1
-memcapture_winpmem_url: https://github.com/Velocidex/c-aff4/releases/download/v3.3.rc1/winpmem_v3.3.rc1.exe
-memcapture_winpmem_ext: aff4
+memcapture_winpmem_v: 4.0.rc1
+memcapture_winpmem_url: https://github.com/Velocidex/WinPmem/releases/download/v4.0.rc1/winpmem_mini_x64_rc2.exe
+memcapture_winpmem_ext: raw
 # memcapture_winpmem_v: 2.1.post4
 # memcapture_winpmem_url: https://github.com/google/rekall/releases/download/v1.5.1/winpmem-2.1.post4.exe
 # memcapture_winpmem_ext: aff4
@@ -54,8 +54,8 @@ memcapture_winpmem_ext: aff4
 # memcapture_linpmem_v: 3.3.rc1
 # memcapture_linpmem_url: https://github.com/Velocidex/c-aff4/releases/download/v3.3.rc1/linpmem_v3.3.rc1
 # memcapture_linpmem_ext: aff4
-memcapture_linpmem_v: 2.1.post4
-memcapture_linpmem_url: https://github.com/google/rekall/releases/download/v1.5.1/linpmem-2.1.post4
+memcapture_linpmem_v: 3.3-rc3
+memcapture_linpmem_url: https://github.com/Velocidex/c-aff4/releases/download/v3.3.rc3/linpmem-v3.3-rc3.3-rc2
 memcapture_linpmem_ext: aff4
 ## linpmem v1 is distributed as source, need to be compile but not as is on 2016 kernel
 # memcapture_linpmem_v: 1.0RC1
