@@ -75,6 +75,7 @@
   until: job_result.finished or linpmemcapture.finished
   retries: "{{ memcapture_retries }}"
   delay: "{{ memcapture_delay }}"
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
 
 - name: retrieve output hash
   stat:
