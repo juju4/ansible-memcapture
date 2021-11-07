@@ -71,7 +71,7 @@ jobs:
         continue-on-error: true
       - name: After script - capture
         run: |
-          find /tmp/ir-bin -ls || true
-          find /tmp/cases -ls || true
+          sudo find /tmp/ir-bin -ls || true
+          sudo find /tmp/cases -ls || true
         if: ${{ always() }}
         continue-on-error: true
