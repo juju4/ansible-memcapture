@@ -40,7 +40,7 @@
         key: ClientMode
         value: 0
         type: int
-  when: (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
+  when: harden_darwin_santa_mode|string and (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
 
 - block:
     - name: do memory capture (osxpmem)
@@ -122,7 +122,7 @@
         key: ClientMode
         value: "{{ harden_darwin_santa_mode }}"
         type: int
-      when: (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
+      when: harden_darwin_santa_mode|string and (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
 
 - name: retrieve output hash
   stat:
