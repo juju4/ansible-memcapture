@@ -58,13 +58,23 @@
   register: memcapture2
 
 - name: memory capture (linpmem)
-  command: "{{ linpmem_bin }} -o {{ linpmem_capture }}"
-  # command: "{{ linpmem_bin }} -dd -o {{ linpmem_capture }}"
+  command: "{{ linpmem_bin }} {{ memcapture_linpmem_args }} -o {{ linpmem_capture }}"
   args:
     chdir: "{{ memcapture_bin_path }}"
   become: yes
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
   failed_when: false
+  async: "{{ memcapture_retries * memcapture_delay }}"
+  poll: 0
+  register: linpmemcapture
+
+- name: check on async task for linpmem capture
+  async_status:
+    jid: "{{ linpmemcapture.ansible_job_id }}"
+    register: job_result
+    until: job_result.finished or linpmemcapture.finished
+    retries: "{{ memcapture_retries }}"
+    delay: "{{ memcapture_delay }}"
 
 - name: retrieve output hash
   stat:

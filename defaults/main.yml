@@ -57,6 +57,7 @@ memcapture_winpmem_ext: raw
 memcapture_linpmem_v: 3.3-rc3
 memcapture_linpmem_url: https://github.com/Velocidex/c-aff4/releases/download/v3.3.rc3/linpmem-v3.3-rc3.3-rc2
 memcapture_linpmem_ext: aff4
+memcapture_linpmem_args: "-dd"
 ## linpmem v1 is distributed as source, need to be compile but not as is on 2016 kernel
 # memcapture_linpmem_v: 1.0RC1
 # memcapture_linpmem_url: https://github.com/google/rekall/releases/download/v1.0.2/linux_pmem_1.0RC1.tgz
@@ -78,6 +79,10 @@ memcapture_avml_args: "--compress"
 # memcapture_avml_args: "--sas_url $(SAS) --delete"
 # To upload to AWS S3
 # memcapture_avml_args: "--put ${URL} --delete"
+
+# Max time for memory capture (x*n secs)
+memcapture_retries: 60
+memcapture_delay: 60
 
 ## fetch output to orchestrator?
 ## Note: might be better to do manually as large file can create a module failure
