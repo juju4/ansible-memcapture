@@ -71,10 +71,10 @@
 - name: check on async task for linpmem capture
   async_status:
     jid: "{{ linpmemcapture.ansible_job_id }}"
-    register: job_result
-    until: job_result.finished or linpmemcapture.finished
-    retries: "{{ memcapture_retries }}"
-    delay: "{{ memcapture_delay }}"
+  register: job_result
+  until: job_result.finished or linpmemcapture.finished
+  retries: "{{ memcapture_retries }}"
+  delay: "{{ memcapture_delay }}"
 
 - name: retrieve output hash
   stat:
