@@ -32,6 +32,9 @@
   include: memory-win.yml
   when: ansible_os_family == 'Windows'
 
+- import_tasks: dwarf2json.yml
+  when: ansible_os_family == 'Darwin' or ansible_system == 'Linux'
+
 - name: Darwin memory capture
   include: memory-darwin.yml
   when: ansible_os_family == 'Darwin'
@@ -61,10 +64,21 @@
   tags:
     - lmg
 
-- include: memory-avml.yml
+- block:
+    - import_tasks: memory-avml.yml
+      when: not memcapture_avml_use_minimal|bool
+      tags:
+        - avml
+    - import_tasks: memory-avml-minimal.yml
+      when: memcapture_avml_use_minimal|bool
+      tags:
+        - avml
+    - import_tasks: memory-avml-capture.yml
+      tags:
+        - avml
+    - import_tasks: memory-avml-convert.yml
+      when: memcapture_avml_use_convert|bool
   when: ansible_system == 'Linux' and memcapture_use_avml is defined and memcapture_use_avml|bool
-  tags:
-    - avml
 
 ## compress file after?
 - block:

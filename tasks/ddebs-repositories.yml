@@ -1,0 +1,35 @@
+---
+
+- name: apt | add debug symbol archive signing key
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: C8CAB6595FDFF622
+    state: present
+
+# https://wiki.ubuntu.com/Debug%20Symbol%20Packages
+- name: Ubuntu | Enable debug symbols repositories
+  blockinfile:
+    path: /etc/apt/sources.list.d/ddebs.list
+    block: |
+      deb http://ddebs.ubuntu.com {{ ansible_distribution_release | lower }} main restricted universe multiverse
+      deb http://ddebs.ubuntu.com {{ ansible_distribution_release | lower }}-updates main restricted universe multiverse
+      deb http://ddebs.ubuntu.com {{ ansible_distribution_release | lower }}-proposed main restricted universe multiverse
+    mode: '0644'
+    create: yes
+  when: ansible_distribution == 'Ubuntu'
+
+# https://wiki.debian.org/AutomaticDebugPackages
+- name: Debian | Enable debug symbols repositories
+  blockinfile:
+    path: /etc/apt/sources.list.d/ddebs.list
+    block: |
+      deb http://deb.debian.org/debian-debug/ stable-debug main
+      deb http://deb.debian.org/debian-debug/ proposed-updates-debug main
+      deb http://deb.debian.org/debian-debug/ stretch-backports-debug main
+      deb http://deb.debian.org/debian-debug/ testing-debug main
+      deb http://deb.debian.org/debian-debug/ testing-proposed-updates-debug main
+      deb http://deb.debian.org/debian-debug/ unstable-debug main
+      deb http://deb.debian.org/debian-debug/ experimental-debug main
+    mode: '0644'
+    create: yes
+  when: ansible_distribution == 'Debian'
