@@ -75,3 +75,15 @@ jobs:
           sudo find /tmp/cases -ls || true
         if: ${{ always() }}
         continue-on-error: true
+      - name: After script - check files with vol3
+        run: |
+          vol.py isfinfo
+          ls -lA ~/.volatility/cache
+          for file in `sudo find /tmp/cases -type f \( -iname '*.lime' -o -iname '*.aff4' \)`; do
+            sudo vol.py -f $file linux.pslist.PsList
+            sudo vol.py -f $file linux.lsof.Lsof
+            sudo vol.py -f $file linux.bash.Bash
+            sudo vol.py -f $file linux.malfind.Malfind
+          done
+        if: ${{ always() }}
+        continue-on-error: true
