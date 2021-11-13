@@ -85,12 +85,12 @@ jobs:
       - name: After script - check files with vol3
         run: |
           vol.py isfinfo
-          ls -lA ~/.volatility/cache
+          ls -lA ~/.volatility/cache || true
           for file in `sudo find /tmp/cases -type f \( -iname '*.lime' -o -iname '*.aff4' \)`; do
-            sudo vol.py -f $file linux.pslist.PsList
-            sudo vol.py -f $file linux.lsof.Lsof
-            sudo vol.py -f $file linux.bash.Bash
-            sudo vol.py -f $file linux.malfind.Malfind
+            sudo vol.py -f $file linux.pslist.PsList || true
+            sudo vol.py -f $file linux.lsof.Lsof || true
+            sudo vol.py -f $file linux.bash.Bash || true
+            sudo vol.py -f $file linux.malfind.Malfind || true
           done
         if: ${{ always() }}
         continue-on-error: true
