@@ -94,7 +94,7 @@ jobs:
             sudo vol.py -f $file linux.pslist.PsList || true
             sudo vol.py -f $file linux.lsof.Lsof || true
             sudo vol.py -f $file linux.bash.Bash || true
-            sudo vol.py -f $file linux.malfind.Malfind || true
+            sudo vol.py -vvv -f $file linux.malfind.Malfind || true
           done
         if: ${{ always() }}
         continue-on-error: true
