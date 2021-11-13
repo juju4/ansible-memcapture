@@ -88,7 +88,7 @@ https://github.com/travis-ci/travis-ci/issues/2291
 
 ## Troubleshooting & Known issues
 
-N/A
+* Latest osxpmem from Velocidex is 3.2 but is in [deprecated kernel extension since macos 10.15](https://developer.apple.com/support/kernel-extensions/). A system extension option has yet to available.
 
 ## License
 
