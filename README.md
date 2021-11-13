@@ -90,6 +90,8 @@ https://github.com/travis-ci/travis-ci/issues/2291
 
 * Latest osxpmem from Velocidex is 3.2 but is in [deprecated kernel extension since macos 10.15](https://developer.apple.com/support/kernel-extensions/). A system extension option has yet to available.
 
+* Linux/Macos volatility processing requires manual dwarf collection. See [Mac/Linux symbol tables](https://volatility3.readthedocs.io/en/stable/symbol-tables.html#mac-linux-symbol-tables) and [dwarf2json](https://github.com/volatilityfoundation/dwarf2json/)
+
 ## License
 
 BSD 2-clause
