@@ -69,6 +69,13 @@ jobs:
           systemctl --failed || true
         if: ${{ always() }}
         continue-on-error: true
+      - name: After script - kernel info
+        run: |
+          ls /boot /usr/lib/debug/boot || true
+          uname -a || true
+          dpkg -l |grep linux-image || true
+        if: ${{ always() }}
+        continue-on-error: true
       - name: After script - capture
         run: |
           sudo find /tmp/ir-bin -ls || true
