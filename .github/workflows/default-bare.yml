@@ -90,11 +90,13 @@ jobs:
         continue-on-error: true
       - name: After script - check files with vol3
         run: |
+          set -x
           for file in `sudo find /tmp/cases -type f \( -iname '*.lime' -o -iname '*.aff4' \)`; do
             sudo vol.py -f $file linux.pslist.PsList || true
             sudo vol.py -f $file linux.lsof.Lsof || true
             sudo vol.py -f $file linux.bash.Bash || true
-            sudo vol.py -vvv -f $file linux.malfind.Malfind || true
+            sudo vol.py -vvvvv -f $file linux.malfind.Malfind || true
+            sudo vol.py -vvvvv -f $file banners || true
           done
         if: ${{ always() }}
         continue-on-error: true
