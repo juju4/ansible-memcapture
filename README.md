@@ -92,6 +92,8 @@ https://github.com/travis-ci/travis-ci/issues/2291
 
 * Linux/Macos volatility processing requires manual dwarf collection. See [Mac/Linux symbol tables](https://volatility3.readthedocs.io/en/stable/symbol-tables.html#mac-linux-symbol-tables) and [dwarf2json](https://github.com/volatilityfoundation/dwarf2json/)
 
+* dwarf2json get killed. When under strace, it ends on futex syscall.
+
 ## License
 
 BSD 2-clause
