@@ -63,7 +63,8 @@
           register: ls
           ignore_errors: true
           changed_when: false
-        - set_fact:
+        - name: Set fact kdk version
+          set_fact:
             kdk_v: "{{ ls.stdout | regex_replace('^KDK_', '') | regex_replace('.kdk$', '') }}"
         - name: retrieve volatility convert.py
           get_url:
@@ -71,24 +72,26 @@
             dest: "{{ memcapture_bin_path }}"
             mode: '0755'
             checksum: 'sha256:e1125cc2dd613252066dac6af125956f2c03f161c20a25d5355d70d07058bbe0'
-        - name: create current macos volatility profile
-          shell: "{{ item.c }} creates={{ item.n }}"
-          with_items:
-            - { c: "dwarfdump -arch x86_64 -i /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel.dSYM > {{ dst_path }}/{{ kdk_v }}.dwarfdump",
-                n: "{{ dst_path }}/{{ kdk_v }}.dwarfdump"
-            }
-            - { c: "dsymutil -s -arch x86_64 /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel > {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil",
-                n: "{{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
-            }
-            - { c: "python {{ memcapture_bin_path }}/convert.py {{ dst_path }}/{{ kdk_v }}.dwarfdump {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump",
-                n: "{{ dst_path }}/converted-{{ kdk_v }}.dwarfdump"
-            }
-            - { c: "python {{ memcapture_bin_path }}/convert.py {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump > {{ dst_path }}/{{ kdk_v }}.vtypes",
-                n: "{{ dst_path }}/{{ kdk_v }}.vtypes"
-            }
-            - { c: "zip {{ dst_path }}/{{ kdk_v }}.zip {{ dst_path }}/{{ kdk_v }}.vtypes {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil",
-                n: "{{ dst_path }}/{{ kdk_v }}.zip"
-            }
+        - name: create current macos volatility profile - dwarfdump
+          shell: "dwarfdump -arch x86_64 -i /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel.dSYM > {{ dst_path }}/{{ kdk_v }}.dwarfdump"
+          args:
+            creates: "{{ dst_path }}/{{ kdk_v }}.dwarfdump"
+        - name: create current macos volatility profile - dsymutil
+          shell: "dsymutil -s -arch x86_64 /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel > {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
+          args:
+            creates: "{{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
+        - name: create current macos volatility profile - dwarfdump2
+          command: "python {{ memcapture_bin_path }}/convert.py {{ dst_path }}/{{ kdk_v }}.dwarfdump {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump"
+          args:
+            creates: "{{ dst_path }}/converted-{{ kdk_v }}.dwarfdump"
+        - name: create current macos volatility profile - vtypes
+          shell: "python {{ memcapture_bin_path }}/convert.py {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump > {{ dst_path }}/{{ kdk_v }}.vtypes"
+          args:
+            creates: "{{ dst_path }}/{{ kdk_v }}.vtypes"
+        - name: create current macos volatility profile - zip
+          command: "zip {{ dst_path }}/{{ kdk_v }}.zip {{ dst_path }}/{{ kdk_v }}.vtypes {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
+          args:
+            creates: "{{ dst_path }}/{{ kdk_v }}.zip"
 
         - name: Volatility git clone
           git:
