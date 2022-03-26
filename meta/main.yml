@@ -1,6 +1,7 @@
 ---
 galaxy_info:
   author: juju4
+  role_name: memcapture
   description: Memory Capture
   license: BSD
   min_ansible_version: 1.9
