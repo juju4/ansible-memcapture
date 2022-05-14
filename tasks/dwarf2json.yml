@@ -30,7 +30,7 @@
     GOBIN: /usr/local/go/bin
 
 - name: Create symbol file for current kernel
-  ansible.builtin.block:
+  block:
     - name: Create symbol file for current kernel - debug sym
       ansible.builtin.shell: "{{ memcapture_bin_path }}/dwarf2json/dwarf2json linux --elf /usr/lib/debug/boot/vmlinux-{{ ansible_kernel }} > {{ dwarffile_path }}/dwarf2json-{{ ansible_kernel }}-dbgsym.json"
       args:

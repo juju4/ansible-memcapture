@@ -68,7 +68,8 @@
   register: clonelime
 
 # if https://help.github.com/articles/https-cloning-errors/
-- block:
+- name: Get Lime
+  block:
     - name: Lime fetch - alternate
       ansible.builtin.get_url:
         url: https://github.com/504ensicsLabs/LiME/archive/master.zip

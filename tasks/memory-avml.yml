@@ -14,7 +14,8 @@
   register: avmlbin
   delegate_to: localhost
 
-- block:
+- name: Install avml
+  block:
     - name: Ensure ansible dependencies are present
       ansible.builtin.package:
         name: libselinux-python

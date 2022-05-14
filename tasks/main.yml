@@ -64,7 +64,8 @@
   tags:
     - lmg
 
-- block:
+- name: Linux | avml
+  block:
     - import_tasks: memory-avml.yml
       when: not memcapture_avml_use_minimal|bool
       tags:
@@ -81,7 +82,8 @@
   when: ansible_system == 'Linux' and memcapture_use_avml is defined and memcapture_use_avml|bool
 
 ## compress file after?
-- block:
+- name: Linux but not Alpine
+  block:
     - name: Ensure we have output files (GNU find)
       ansible.builtin.shell: "find {{ dst_path }}/ -ls | egrep '(aff4|lime|zip|fmem|raw|map)'"
       register: lsout
@@ -90,7 +92,8 @@
     - name: Debug | output files listing
       ansible.builtin.debug: var=lsout.stdout_lines
   when: ansible_system == 'Linux' and ansible_distribution != 'Alpine'
-- block:
+- name: Alpine
+  block:
     - name: Ensure we have output files
       ansible.builtin.shell: "find {{ dst_path }}/ | egrep '(aff4|lime|zip|fmem|raw|map)'"
       register: lsout2
@@ -102,7 +105,8 @@
 
 - name: Debug | var memcapture_pull
   ansible.builtin.debug: var=memcapture_pull
-- block:
+- name: Fetch files
+  block:
     # - name: archive output content
     ## v2.3
     #   archive: "src={{ dst_path }} dest={{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"

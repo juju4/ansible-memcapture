@@ -33,7 +33,8 @@
 
 - name: Debug | Google Santa mode
   ansible.builtin.debug: var=harden_darwin_santa_mode
-- block:
+- name: Google Santa
+  block:
     - name: ensure config set to monitor mode
       osx_defaults:
         domain: /var/db/santa/config.plist
@@ -42,7 +43,8 @@
         type: int
   when: harden_darwin_santa_mode is defined and (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
 
-- block:
+- name: Darwin | Memory capture
+  block:
     - name: do memory capture (osxpmem)
       ansible.builtin.command: >
         {{ osxpmem_bin }} --format {{ memcapture_osxpmem_ext | default('map') }} -o {{ osxpmem_capture }}
