@@ -1,18 +1,18 @@
 ---
 
 - name: Set fact osxpmem_archive
-  set_fact:
+  ansible.builtin.set_fact:
     osxpmem_archive: "{{ memcapture_bin_path }}/{{ memcapture_osxpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
 - name: Set fact osxpmem_bin...
-  set_fact:
+  ansible.builtin.set_fact:
     osxpmem_bin: "{{ memcapture_bin_path }}/osxpmem.app/osxpmem"
     osxpmem_capture: "{{ dst_path }}/{{ prefix }}-memory.{{ memcapture_osxpmem_ext }}"
 
 - name: Check if osxpmem archive is present
-  stat: path={{ osxpmem_archive }}
+  ansible.builtin.stat: path={{ osxpmem_archive }}
   register: osxpmem
 - name: Osxpmem download
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ memcapture_osxpmem_url }}"
     dest: "{{ osxpmem_archive }}"
     mode: 0444
@@ -22,9 +22,9 @@
   when: not osxpmem.stat.exists and memcapture_download|bool
 
 - name: Debug | osxpmem binary
-  debug: var=osxpmem_bin
+  ansible.builtin.debug: var=osxpmem_bin
 - name: extract osxpmem
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ osxpmem_archive }}"
     dest: "{{ memcapture_bin_path }}"
     mode: "0700"
@@ -32,7 +32,7 @@
     remote_src: true
 
 - name: Debug | Google Santa mode
-  debug: var=harden_darwin_santa_mode
+  ansible.builtin.debug: var=harden_darwin_santa_mode
 - block:
     - name: ensure config set to monitor mode
       osx_defaults:
@@ -44,7 +44,7 @@
 
 - block:
     - name: do memory capture (osxpmem)
-      command: >
+      ansible.builtin.command: >
         {{ osxpmem_bin }} --format {{ memcapture_osxpmem_ext | default('map') }} -o {{ osxpmem_capture }}
       args:
         creates: "{{ osxpmem_capture }}"
@@ -55,52 +55,52 @@
     ##      from volatility, require Apple Kernel Developer Kit which is not installed by default...
     ##      https://github.com/volatilityfoundation/volatility/issues/349
     - name: check if Kernel Debug Kit present
-      stat: path=/Library/Developer/KDKs
+      ansible.builtin.stat: path=/Library/Developer/KDKs
       register: kdk
     - block:
         - name: retrieve KDK latest dir
-          shell: "ls -At /Library/Developer/KDKs/ | head -1"
+          ansible.builtin.shell: "ls -At /Library/Developer/KDKs/ | head -1"
           register: ls
           ignore_errors: true
           changed_when: false
         - name: Set fact kdk version
-          set_fact:
+          ansible.builtin.set_fact:
             kdk_v: "{{ ls.stdout | regex_replace('^KDK_', '') | regex_replace('.kdk$', '') }}"
         - name: retrieve volatility convert.py
-          get_url:
+          ansible.builtin.get_url:
             url: "https://raw.githubusercontent.com/volatilityfoundation/volatility/master/tools/mac/convert.py"
             dest: "{{ memcapture_bin_path }}"
             mode: '0755'
             checksum: 'sha256:e1125cc2dd613252066dac6af125956f2c03f161c20a25d5355d70d07058bbe0'
         - name: create current macos volatility profile - dwarfdump
-          shell: "dwarfdump -arch x86_64 -i /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel.dSYM > {{ dst_path }}/{{ kdk_v }}.dwarfdump"
+          ansible.builtin.shell: "dwarfdump -arch x86_64 -i /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel.dSYM > {{ dst_path }}/{{ kdk_v }}.dwarfdump"
           args:
             creates: "{{ dst_path }}/{{ kdk_v }}.dwarfdump"
         - name: create current macos volatility profile - dsymutil
-          shell: "dsymutil -s -arch x86_64 /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel > {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
+          ansible.builtin.shell: "dsymutil -s -arch x86_64 /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel > {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
           args:
             creates: "{{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
         - name: create current macos volatility profile - dwarfdump2
-          command: "python {{ memcapture_bin_path }}/convert.py {{ dst_path }}/{{ kdk_v }}.dwarfdump {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump"
+          ansible.builtin.command: "python {{ memcapture_bin_path }}/convert.py {{ dst_path }}/{{ kdk_v }}.dwarfdump {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump"
           args:
             creates: "{{ dst_path }}/converted-{{ kdk_v }}.dwarfdump"
         - name: create current macos volatility profile - vtypes
-          shell: "python {{ memcapture_bin_path }}/convert.py {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump > {{ dst_path }}/{{ kdk_v }}.vtypes"
+          ansible.builtin.shell: "python {{ memcapture_bin_path }}/convert.py {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump > {{ dst_path }}/{{ kdk_v }}.vtypes"
           args:
             creates: "{{ dst_path }}/{{ kdk_v }}.vtypes"
         - name: create current macos volatility profile - zip
-          command: "zip {{ dst_path }}/{{ kdk_v }}.zip {{ dst_path }}/{{ kdk_v }}.vtypes {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
+          ansible.builtin.command: "zip {{ dst_path }}/{{ kdk_v }}.zip {{ dst_path }}/{{ kdk_v }}.vtypes {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
           args:
             creates: "{{ dst_path }}/{{ kdk_v }}.zip"
 
         - name: Volatility git clone
-          git:
+          ansible.builtin.git:
             repo: https://github.com/volatilityfoundation/volatility
             dest: "{{ memcapture_bin_path }}/volatility"
             version: "{{ memcapture_volatility_version | default('f1ac0b1e90cf486da2a37cffb3448b208943d226') }}"
             update: no
         - name: check profile is valid
-          command: >
+          ansible.builtin.command: >
             python {{ memcapture_bin_path }}/volatility/vol.py --plugins . -f {{ dst_path }}/{{ prefix }}-memory.raw
                 --profile Mac{{ kdk_v }}x64 imageinfo
           args:
@@ -111,7 +111,7 @@
           ignore_errors: true
           when: memcapture_osxpmem_ext == 'raw'
         - name: Debug | check profile output
-          debug: var=checkprofile
+          ansible.builtin.debug: var=checkprofile
           ## to validate with rekall
           # rekall convert_profile vol-profile.zip rekall-profile.json
           # rekall --profile rekall-profile.json -f mem.aff4 psaux
@@ -128,9 +128,9 @@
       when: harden_darwin_santa_mode is defined and (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
 
 - name: retrieve output hash
-  stat:
+  ansible.builtin.stat:
     path: "{{ osxpmem_capture }}"
     checksum_algorithm: sha256
   register: outputstat
 - name: Debug | file output hash
-  debug: var=outputstat.stat.checksum
+  ansible.builtin.debug: var=outputstat.stat.checksum

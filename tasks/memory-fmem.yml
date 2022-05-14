@@ -2,11 +2,11 @@
 ## for older systems, use fmem
 ## FIXME! rpm packages from https://forensics.cert.org/
 - name: FATAL
-  fail: msg="Missing memory size! required for fmem."
+  ansible.builtin.fail: msg="Missing memory size! required for fmem."
   when: memory_size is undefined
 
 - name: Debian | Extra packages install
-  apt:
+  ansible.builtin.apt:
     name: ['make', 'gcc', 'linux-generic', 'linux-headers-{{ ansible_kernel }}']
     state: present
   become: yes
@@ -15,11 +15,11 @@
   until: pkg_result is success
 
 - name: Check if fmem archive is present
-  stat:
+  ansible.builtin.stat:
     path: "{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
   register: fmem
 - name: fmem download
-  get_url:
+  ansible.builtin.get_url:
     url: "http://hysteria.cz/niekt0/fmem/fmem_{{ memcapture_fmem_v }}.tgz"
     dest: "{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
     mode: '0400'
@@ -27,7 +27,7 @@
   until: dl_result is success
   when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download|bool)
 - name: Extract fmem
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}.tgz"
     dest: "{{ memcapture_bin_path }}"
   when: not fmem.stat.exists and (memcapture_download is defined and memcapture_download|bool)
@@ -35,10 +35,10 @@
 # change memory size
 
 - name: Check if already a capture file
-  stat: path={{ dst_path }}/{{ prefix }}-fmem-memory.img
+  ansible.builtin.stat: path={{ dst_path }}/{{ prefix }}-fmem-memory.img
   register: memcapture2
 - name: FMEM | procinfo
-  shell: "{{ item }}"  # noqa command-instead-of-shell
+  ansible.builtin.shell: "{{ item }}"  # noqa command-instead-of-shell
   with_items:
     - "cat /proc/meminfo > {{ dst_path }}/{{ prefix }}-proc-meminfo"
     - "cat /proc/iomem > {{ dst_path }}/{{ prefix }}-proc-iomem"
@@ -46,11 +46,11 @@
   when: not memcapture2.stat.exists
 
 - name: Check if fmem.ko exists
-  stat: path={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem.ko
+  ansible.builtin.stat: path={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem.ko
   register: fmemko
 ## fmem.ko is probably kernel dependent, so better rebuild... or prebuilt
 - name: FMEM | memory capture
-  command: "{{ item }} chdir={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"
+  ansible.builtin.command: "{{ item }} chdir={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"
   with_items:
     - make
   when: not fmemko.stat.exists and (memcapture_build is defined and memcapture_build|bool)
@@ -63,13 +63,13 @@
 #     replace: '{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem-{{ ansible_kernel }}.ko'
 
 - name: FMEM | memory capture (1)
-  command: "./run.sh chdir={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"
+  ansible.builtin.command: "./run.sh chdir={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"
   become: yes
   ## if run.sh/fmem.ko already loaded
   failed_when: false
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
 - name: FMEM | memory capture (2)
-  command: >
+  ansible.builtin.command: >
     dd if=/dev/fmem of={{ dst_path }}/{{ prefix }}-memory-fmem.img conv=noerror,sync bs={{ memcapture_memory_bs }}
         count={{ memcapture_memory_size }}
   args:
@@ -78,7 +78,7 @@
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
 
 - name: retrieve output hash
-  stat: path="{{ dst_path }}/{{ prefix }}-memory-fmem.img" checksum_algorithm=sha256
+  ansible.builtin.stat: path="{{ dst_path }}/{{ prefix }}-memory-fmem.img" checksum_algorithm=sha256
   register: outputstat
 - name: Debug | file output hash
-  debug: var=outputstat.stat.checksum
+  ansible.builtin.debug: var=outputstat.stat.checksum

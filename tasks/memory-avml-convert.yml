@@ -1,7 +1,7 @@
 ---
 
 - name: Microsoft Avml-convert download
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ memcapture_avmlconvert_bin }}"
     dest: "{{ memcapture_bin_path }}/avml-convert"
     mode: '0700'
@@ -10,7 +10,7 @@
   when: (memcapture_download is defined and memcapture_download|bool)
 
 - name: Install avml locally
-  copy:
+  ansible.builtin.copy:
     src: "{{ memcapture_bin_path }}/avml-convert"
     dest: /usr/local/bin/
     mode: '0700'

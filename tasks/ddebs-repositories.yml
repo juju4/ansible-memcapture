@@ -1,14 +1,14 @@
 ---
 
 - name: apt | add debug symbol archive signing key
-  apt_key:
+  ansible.builtin.apt_key:
     keyserver: keyserver.ubuntu.com
     id: C8CAB6595FDFF622
     state: present
 
 # https://wiki.ubuntu.com/Debug%20Symbol%20Packages
 - name: Ubuntu | Enable debug symbols repositories
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/apt/sources.list.d/ddebs.list
     block: |
       deb http://ddebs.ubuntu.com {{ ansible_distribution_release | lower }} main restricted universe multiverse
@@ -20,7 +20,7 @@
 
 # https://wiki.debian.org/AutomaticDebugPackages
 - name: Debian | Enable debug symbols repositories
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/apt/sources.list.d/ddebs.list
     block: |
       deb http://deb.debian.org/debian-debug/ stable-debug main

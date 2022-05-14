@@ -1,7 +1,7 @@
 ---
 
 - name: Set fact winpmem_bin...
-  set_fact:
+  ansible.builtin.set_fact:
     winpmem_bin: "{{ memcapture_bin_path }}\\{{ memcapture_winpmem_url | regex_replace('^.*/([^/].*)$', '\\1') }}"
     winpmem_capture: "{{ dst_path }}\\{{ prefix }}-memory.{{ memcapture_winpmem_ext }}"
 
@@ -30,27 +30,27 @@
   register: vsm
 
 - name: Debug | Virtual Secure Mode
-  debug: var=vsm
+  ansible.builtin.debug: var=vsm
 
 - name: Wait user confirmation before starting memory capture
-  pause:
+  ansible.builtin.pause:
 
 ## FIXME! through powershell ? (ansible 'script:')
 - name: Do memory capture (winpmem)
-  raw: "{{ winpmem_bin }} -o {{ winpmem_capture }}"
+  ansible.builtin.raw: "{{ winpmem_bin }} -o {{ winpmem_capture }}"
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
   notify:
     - win disk sync
 
 - name: Flush handlers
-  meta: flush_handlers
+  ansible.builtin.meta: flush_handlers
 
 - name: retrieve output hash
-  stat:
+  ansible.builtin.stat:
     path: "{{ winpmem_capture }}"
   register: outputstat
 - name: Debug | output file hash
-  debug: var=outputstat.stat.checksum
+  ansible.builtin.debug: var=outputstat.stat.checksum
 
 ## https://docs.google.com/presentation/d/1savcvqRcMXpRyVrybWvbHGbJTgjInZcwLB5VokJdKa8/edit#slide=id.g26dcd0ccb_030
 # "c:\Program Files\Rekall\winpmem_1.6.0.exe" -e - | c:\Users\mic\Desktop\ncat.exe 172.16.21.93 8001  --ssl

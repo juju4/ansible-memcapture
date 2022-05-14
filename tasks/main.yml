@@ -1,28 +1,28 @@
 ---
 
 - name: Include version-specific variables for Ubuntu.
-  include_vars: "{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
+  ansible.builtin.include_vars: "{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
   when: ansible_distribution == 'Ubuntu'
 - name: Include version-specific variables for RedHat
-  include_vars: "RedHat-{{ ansible_distribution_version.split('.')[0] }}.yml"
+  ansible.builtin.include_vars: "RedHat-{{ ansible_distribution_version.split('.')[0] }}.yml"
   when: ansible_os_family == "RedHat"
 - name: Include specific variables for Alpine
-  include_vars: "Alpine.yml"
+  ansible.builtin.include_vars: "Alpine.yml"
   when: ansible_distribution == 'Alpine'
 
 - name: Debug | var memcapture_use_linpmem
-  debug: var=memcapture_use_linpmem
+  ansible.builtin.debug: var=memcapture_use_linpmem
 - name: Debug | var memcapture_use_fmem
-  debug: var=memcapture_use_fmem
+  ansible.builtin.debug: var=memcapture_use_fmem
 - name: Debug | var memcapture_use_lmg
-  debug: var=memcapture_use_lmg
+  ansible.builtin.debug: var=memcapture_use_lmg
 - name: Debug | var memcapture_use_avml
-  debug: var=memcapture_use_avml
+  ansible.builtin.debug: var=memcapture_use_avml
 - name: Debug | var memcapture_capture
-  debug: var=memcapture_capture
+  ansible.builtin.debug: var=memcapture_capture
 
 - name: check appropriate directories exist
-  file: dest={{ item }} state=directory mode=0700
+  ansible.builtin.file: dest={{ item }} state=directory mode=0700
   with_items:
     - "{{ dst_mount }}"
     - "{{ dst_path }}"
@@ -83,25 +83,25 @@
 ## compress file after?
 - block:
     - name: Ensure we have output files (GNU find)
-      shell: "find {{ dst_path }}/ -ls | egrep '(aff4|lime|zip|fmem|raw|map)'"
+      ansible.builtin.shell: "find {{ dst_path }}/ -ls | egrep '(aff4|lime|zip|fmem|raw|map)'"
       register: lsout
       changed_when: false
       ignore_errors: true
     - name: Debug | output files listing
-      debug: var=lsout.stdout_lines
+      ansible.builtin.debug: var=lsout.stdout_lines
   when: ansible_system == 'Linux' and ansible_distribution != 'Alpine'
 - block:
     - name: Ensure we have output files
-      shell: "find {{ dst_path }}/ | egrep '(aff4|lime|zip|fmem|raw|map)'"
+      ansible.builtin.shell: "find {{ dst_path }}/ | egrep '(aff4|lime|zip|fmem|raw|map)'"
       register: lsout2
       changed_when: false
       ignore_errors: true
     - name: Debug | output files listing
-      debug: var=lsout2.stdout_lines
+      ansible.builtin.debug: var=lsout2.stdout_lines
   when: ansible_system != 'Linux' or ansible_distribution == 'Alpine'
 
 - name: Debug | var memcapture_pull
-  debug: var=memcapture_pull
+  ansible.builtin.debug: var=memcapture_pull
 - block:
     # - name: archive output content
     ## v2.3
@@ -112,7 +112,7 @@
     #     creates: "{{ dst_mount }}/memcapture-{{ prefix }}-memory.tar.gz"
     ## 2.6+ for net_get
     - name: retrieve output dir to orchestrator
-      net_get:
+      ansible.builtin.net_get:
         src: "{{ item }}"
         dest: "{{ memcapture_pulldir }}/"
         protocol: sftp

@@ -4,7 +4,7 @@
 - import_tasks: ddebs-repositories.yml
 
 - name: Debian | install kernel debug package
-  apt:
+  ansible.builtin.apt:
     name: "linux-image-{{ ansible_kernel }}-dbgsym"
     state: present
   when: >
@@ -15,13 +15,13 @@
   failed_when: false
 
 - name: Git clone dwarf2json
-  git:
+  ansible.builtin.git:
     repo: https://github.com/volatilityfoundation/dwarf2json.git
     dest: "{{ memcapture_bin_path }}/dwarf2json"
     version: "{{ memcapture_dwarf2json_version | default('e8a1ce85dc33bf2039adc7f8a5f47f3016153720') }}"
 
 - name: go build dwarf2json
-  command: go build
+  ansible.builtin.command: go build
   args:
     chdir: "{{ memcapture_bin_path }}/dwarf2json"
     creates: "{{ memcapture_bin_path }}/dwarf2json/dwarf2json"
@@ -30,14 +30,14 @@
     GOBIN: /usr/local/go/bin
 
 - name: Create symbol file for current kernel
-  block:
+  ansible.builtin.block:
     - name: Create symbol file for current kernel - debug sym
-      shell: "{{ memcapture_bin_path }}/dwarf2json/dwarf2json linux --elf /usr/lib/debug/boot/vmlinux-{{ ansible_kernel }} > {{ dwarffile_path }}/dwarf2json-{{ ansible_kernel }}-dbgsym.json"
+      ansible.builtin.shell: "{{ memcapture_bin_path }}/dwarf2json/dwarf2json linux --elf /usr/lib/debug/boot/vmlinux-{{ ansible_kernel }} > {{ dwarffile_path }}/dwarf2json-{{ ansible_kernel }}-dbgsym.json"
       args:
         creates: "{{ dwarffile_path }}/dwarf2json-{{ ansible_kernel }}-dbgsym.json"
   rescue:
     - name: Create symbol file for current kernel - /boot
-      shell: "{{ memcapture_bin_path }}/dwarf2json/dwarf2json linux --system-map /boot/System.map-{{ ansible_kernel }} > {{ dwarffile_path }}/dwarf2json-{{ ansible_kernel }}.json"
+      ansible.builtin.shell: "{{ memcapture_bin_path }}/dwarf2json/dwarf2json linux --system-map /boot/System.map-{{ ansible_kernel }} > {{ dwarffile_path }}/dwarf2json-{{ ansible_kernel }}.json"
       args:
         creates: "{{ dwarffile_path }}/dwarf2json-{{ ansible_kernel }}.json"
       failed_when: false
