@@ -3,7 +3,7 @@
 # prefix: "{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 }}"
 # prefix: "{{ ansible_fqdn }}-{{ ansible_date_time.epoch }}"
 # prefix: "{{ ansible_fqdn }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }}"
-prefix: "{{ ansible_fqdn }}"
+prefix: "{{ ansible_fqdn }}"
 
 ## mount point for network share
 dst_mount: "/tmp/cases"
