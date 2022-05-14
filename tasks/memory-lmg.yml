@@ -106,7 +106,8 @@
   register: clonevol
 
 # if https://help.github.com/articles/https-cloning-errors/
-- block:
+- name: If git clone failed
+  block:
     - name: Volatility fetch - alternate
       ansible.builtin.get_url:
         url: https://downloads.volatilityfoundation.org/releases/2.6/volatility-2.6.zip
@@ -145,7 +146,8 @@
   register: clonelmg
 
 # if https://help.github.com/articles/https-cloning-errors/
-- block:
+- name: If lmg git clone failed
+  block:
     - name: LMG fetch - alternate
       ansible.builtin.get_url:
         url: https://github.com/halpomeranz/lmg/archive/master.zip
@@ -223,7 +225,8 @@
   register: lmgout
 
 ## https://github.com/volatilityfoundation/volatility/wiki/Linux
-- block:
+- name: Linux not alpine
+  block:
     - name: retrieve lmg output dir
       ansible.builtin.shell: |
         set -o pipefail
@@ -238,7 +241,8 @@
         # fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
         fname: "{{ lscapture.stdout }}"
   when: ansible_distribution != 'Alpine'
-- block:
+- name: Alpine
+  block:
     - name: retrieve lmg output dir
       ansible.builtin.shell: |
         set -o pipefail
@@ -258,7 +262,8 @@
 - name: Debug | output file hash
   ansible.builtin.debug: var=outputstat.stat.checksum
 
-- block:
+- name: Profile
+  block:
     - name: Debug | kernel
       ansible.builtin.debug: var=ansible_kernel
     - name: recreate volatility profile archive

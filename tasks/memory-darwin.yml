@@ -59,7 +59,8 @@
     - name: check if Kernel Debug Kit present
       ansible.builtin.stat: path=/Library/Developer/KDKs
       register: kdk
-    - block:
+    - name: Generate volatility2 profile
+      block:
         - name: retrieve KDK latest dir
           ansible.builtin.shell: "ls -At /Library/Developer/KDKs/ | head -1"
           register: ls
