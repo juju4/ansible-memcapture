@@ -3,7 +3,7 @@
 - hosts: all
   become: true
   vars:
-    - tmp_path: /tmp
+    tmp_path: /tmp
   tasks:
     ## https://github.com/google/rekall/releases
     - name: Check linpmem stat

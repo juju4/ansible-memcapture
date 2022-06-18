@@ -4,13 +4,11 @@ galaxy_info:
   role_name: memcapture
   description: Memory Capture
   license: BSD
-  min_ansible_version: 1.9
+  min_ansible_version: '1.9'
   platforms:
     - name: EL
       versions:
-        - 6
-        - 7
-        - 8
+        - all
     - name: Ubuntu
       versions:
         - bionic
