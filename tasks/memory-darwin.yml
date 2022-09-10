@@ -19,11 +19,11 @@
     # checksum: "{{ memcapture_osxpmem_hash }}"
   register: dl_result
   until: dl_result is success
-  when: not osxpmem.stat.exists and memcapture_download|bool
+  when: not osxpmem.stat.exists and memcapture_download | bool
 
 - name: Debug | osxpmem binary
   ansible.builtin.debug: var=osxpmem_bin
-- name: extract osxpmem
+- name: Extract osxpmem
   ansible.builtin.unarchive:
     src: "{{ osxpmem_archive }}"
     dest: "{{ memcapture_bin_path }}"
@@ -35,7 +35,7 @@
   ansible.builtin.debug: var=harden_darwin_santa_mode
 - name: Google Santa
   block:
-    - name: ensure config set to monitor mode
+    - name: Ensure config set to monitor mode
       osx_defaults:
         domain: /var/db/santa/config.plist
         key: ClientMode
@@ -45,23 +45,23 @@
 
 - name: Darwin | Memory capture
   block:
-    - name: do memory capture (osxpmem)
+    - name: Do memory capture (osxpmem)
       ansible.builtin.command: >
         {{ osxpmem_bin }} --format {{ memcapture_osxpmem_ext | default('map') }} -o {{ osxpmem_capture }}
       args:
         creates: "{{ osxpmem_capture }}"
-      when: (memcapture_capture is defined and memcapture_capture|bool)
+      when: (memcapture_capture is defined and memcapture_capture | bool)
 
     ## Note: you could recover also /private/var/vm/{sleepimage,swapfile} if not encrypted (sysctl vm.swapusage)
     ## FIXME! install/run rekall in live mode to check that we have a profile? rekall -f /dev/pmem imageinfo
     ##      from volatility, require Apple Kernel Developer Kit which is not installed by default...
     ##      https://github.com/volatilityfoundation/volatility/issues/349
-    - name: check if Kernel Debug Kit present
+    - name: Check if Kernel Debug Kit present
       ansible.builtin.stat: path=/Library/Developer/KDKs
       register: kdk
     - name: Generate volatility2 profile
       block:
-        - name: retrieve KDK latest dir
+        - name: Retrieve KDK latest dir
           ansible.builtin.shell: "ls -At /Library/Developer/KDKs/ | head -1"
           register: ls
           ignore_errors: true
@@ -69,29 +69,29 @@
         - name: Set fact kdk version
           ansible.builtin.set_fact:
             kdk_v: "{{ ls.stdout | regex_replace('^KDK_', '') | regex_replace('.kdk$', '') }}"
-        - name: retrieve volatility convert.py
+        - name: Retrieve volatility convert.py
           ansible.builtin.get_url:
             url: "https://raw.githubusercontent.com/volatilityfoundation/volatility/master/tools/mac/convert.py"
             dest: "{{ memcapture_bin_path }}"
             mode: '0755'
             checksum: 'sha256:e1125cc2dd613252066dac6af125956f2c03f161c20a25d5355d70d07058bbe0'
-        - name: create current macos volatility profile - dwarfdump
+        - name: Create current macos volatility profile - dwarfdump
           ansible.builtin.shell: "dwarfdump -arch x86_64 -i /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel.dSYM > {{ dst_path }}/{{ kdk_v }}.dwarfdump"
           args:
             creates: "{{ dst_path }}/{{ kdk_v }}.dwarfdump"
-        - name: create current macos volatility profile - dsymutil
+        - name: Create current macos volatility profile - dsymutil
           ansible.builtin.shell: "dsymutil -s -arch x86_64 /Library/Developer/KDKs/KDK_{{ kdk_v }}.kdk/System/Library/Kernels/kernel > {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
           args:
             creates: "{{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
-        - name: create current macos volatility profile - dwarfdump2
+        - name: Create current macos volatility profile - dwarfdump2
           ansible.builtin.command: "python {{ memcapture_bin_path }}/convert.py {{ dst_path }}/{{ kdk_v }}.dwarfdump {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump"
           args:
             creates: "{{ dst_path }}/converted-{{ kdk_v }}.dwarfdump"
-        - name: create current macos volatility profile - vtypes
+        - name: Create current macos volatility profile - vtypes
           ansible.builtin.shell: "python {{ memcapture_bin_path }}/convert.py {{ dst_path }}/converted-{{ kdk_v }}.dwarfdump > {{ dst_path }}/{{ kdk_v }}.vtypes"
           args:
             creates: "{{ dst_path }}/{{ kdk_v }}.vtypes"
-        - name: create current macos volatility profile - zip
+        - name: Create current macos volatility profile - zip
           ansible.builtin.command: "zip {{ dst_path }}/{{ kdk_v }}.zip {{ dst_path }}/{{ kdk_v }}.vtypes {{ dst_path }}/{{ kdk_v }}.symbol.dsymutil"
           args:
             creates: "{{ dst_path }}/{{ kdk_v }}.zip"
@@ -102,7 +102,7 @@
             dest: "{{ memcapture_bin_path }}/volatility"
             version: "{{ memcapture_volatility_version | default('f1ac0b1e90cf486da2a37cffb3448b208943d226') }}"
             update: no
-        - name: check profile is valid
+        - name: Check profile is valid
           ansible.builtin.command: >
             python {{ memcapture_bin_path }}/volatility/vol.py --plugins . -f {{ dst_path }}/{{ prefix }}-memory.raw
                 --profile Mac{{ kdk_v }}x64 imageinfo
@@ -122,7 +122,7 @@
       when: kdk.stat.exists
 
   always:
-    - name: ensure config set to lockdown mode
+    - name: Ensure config set to lockdown mode
       osx_defaults:
         domain: /var/db/santa/config.plist
         key: ClientMode
@@ -130,7 +130,7 @@
         type: int
       when: harden_darwin_santa_mode is defined and (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
 
-- name: retrieve output hash
+- name: Retrieve output hash
   ansible.builtin.stat:
     path: "{{ osxpmem_capture }}"
     checksum_algorithm: sha256

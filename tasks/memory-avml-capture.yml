@@ -5,15 +5,15 @@
     path: "{{ avml_capture }}"
   register: memcapture2
 
-- name: memory capture (avml)
+- name: Memory capture (avml)
   ansible.builtin.command: "/usr/local/bin/avml {{ memcapture_avml_args }} {{ avml_capture }}"
   args:
     chdir: "{{ memcapture_bin_path }}"
   become: yes
-  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture | bool)
   failed_when: false
 
-- name: retrieve output hash
+- name: Retrieve output hash
   ansible.builtin.stat:
     path: "{{ avml_capture }}"
     checksum_algorithm: sha256

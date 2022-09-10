@@ -20,7 +20,7 @@
     dest: "{{ memcapture_bin_path }}/dwarf2json"
     version: "{{ memcapture_dwarf2json_version | default('e8a1ce85dc33bf2039adc7f8a5f47f3016153720') }}"
 
-- name: go build dwarf2json
+- name: Go build dwarf2json
   ansible.builtin.command: go build
   args:
     chdir: "{{ memcapture_bin_path }}/dwarf2json"

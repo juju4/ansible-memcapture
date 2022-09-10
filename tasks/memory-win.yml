@@ -9,14 +9,14 @@
   win_stat:
     path: "{{ winpmem_bin }}"
   register: winpmem
-- name: winpmem download
+- name: Winpmem download
   win_get_url:
     url: "{{ memcapture_winpmem_url }}"
     dest: "{{ winpmem_bin }}"
     mode: '0400'
   register: dl_result
   until: dl_result is success
-  when: not winpmem.stat.exists and memcapture_download|bool
+  when: not winpmem.stat.exists and memcapture_download | bool
 
 - name: Check if existing winpmem capture
   win_stat:
@@ -25,7 +25,7 @@
 
 # https://df-stream.com/2017/08/memory-acquisition-and-virtual-secure/
 # http://blog.rekall-forensic.com/2018/09/virtual-secure-mode-and-memory.html
-- name: check if Virtual Secure Mode is enabled
+- name: Check if Virtual Secure Mode is enabled
   win_shell: Get-Process 'Secure System' -ErrorAction SilentlyContinue
   register: vsm
 
@@ -38,14 +38,14 @@
 ## FIXME! through powershell ? (ansible 'script:')
 - name: Do memory capture (winpmem)
   ansible.builtin.raw: "{{ winpmem_bin }} -o {{ winpmem_capture }}"
-  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture | bool)
   notify:
-    - win disk sync
+    - Win disk sync
 
 - name: Flush handlers
   ansible.builtin.meta: flush_handlers
 
-- name: retrieve output hash
+- name: Retrieve output hash
   ansible.builtin.stat:
     path: "{{ winpmem_capture }}"
   register: outputstat

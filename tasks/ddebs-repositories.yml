@@ -1,6 +1,6 @@
 ---
 
-- name: apt | add debug symbol archive signing key
+- name: Debian | add debug symbol archive signing key
   ansible.builtin.apt_key:
     keyserver: keyserver.ubuntu.com
     id: C8CAB6595FDFF622

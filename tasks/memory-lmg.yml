@@ -1,10 +1,10 @@
 ---
 
-- name: apt | Extra packages install for lmg
+- name: Debian | Extra packages install for lmg
   ansible.builtin.apt: name={{ memory_lmg_deps }} state=present
   become: yes
   when: >
-    (memcapture_install is defined and memcapture_install|bool) and
+    (memcapture_install is defined and memcapture_install | bool) and
     (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
 ## Note: seems distribution are not keeping their linux-headers for all base kernel...
 ##       Ubuntu12.04 "No package matching 'linux-headers-3.19.0-30-generic' is available"
@@ -12,25 +12,25 @@
   register: pkg_result
   until: pkg_result is success
 
-- name: yum | Extra packages install for lmg
+- name: Redhat | Extra packages install for lmg
   ansible.builtin.yum: name={{ memory_lmg_deps }} state=present
   become: yes
   when: >
-    (memcapture_install is defined and memcapture_install|bool) and
+    (memcapture_install is defined and memcapture_install | bool) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
   register: pkg_result
   until: pkg_result is success
 
 - import_tasks: gcc.yml
 
-- name: check installed kernels
+- name: Check installed kernels
   ansible.builtin.command: "ls /usr/src/kernels/"
   changed_when: false
   register: d1
   when: >
-    (memcapture_install is defined and memcapture_install|bool) and
+    (memcapture_install is defined and memcapture_install | bool) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
-- name: redhat | check installed kernel-headers rpm
+- name: Redhat | check installed kernel-headers rpm
   ansible.builtin.command: "rpm -qa kernel-headers"
   args:
     warn: False
@@ -41,10 +41,10 @@
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - name: Debug | kernel src directories
   ansible.builtin.debug: var=d1.stdout_lines
-  when: (memcapture_install is defined and memcapture_install|bool)
+  when: (memcapture_install is defined and memcapture_install | bool)
 - name: Debug | kernel-headers packages
   ansible.builtin.debug: var=d2.stdout_lines
-  when: (memcapture_install is defined and memcapture_install|bool)
+  when: (memcapture_install is defined and memcapture_install | bool)
 - name: Ensure appropriate symlink to latest src/kernels in order to build module
   ansible.builtin.file:
     src: "/usr/src/kernels/{{ d2.stdout_lines.0 | replace('kernel-headers-', '') }}"
@@ -53,7 +53,7 @@
   become: yes
   failed_when: false
   when: >
-    (memcapture_install is defined and memcapture_install|bool) and
+    (memcapture_install is defined and memcapture_install | bool) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - name: Check if LiME directory is present
   ansible.builtin.stat: path={{ memcapture_bin_path }}/LiME
@@ -63,7 +63,7 @@
     repo: https://github.com/504ensicsLabs/LiME.git
     dest: "{{ memcapture_bin_path }}/LiME"
     version: "{{ memcapture_lime_version | default('9bd146ae54ef9f04acc09c44544aaf66aa8566d1') }}"
-  when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download|bool)
+  when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download | bool)
   ignore_errors: true
   register: clonelime
 
@@ -81,17 +81,17 @@
         state: present
       register: pkg_result
       until: pkg_result is success
-    - name: unarchive LiME
+    - name: Unarchive LiME
       ansible.builtin.unarchive:
         src: "{{ memcapture_bin_path }}/LiME.zip"
         dest: "{{ memcapture_bin_path }}"
         creates: "{{ memcapture_bin_path }}/LiME/src/Makefile"
-    - name: symlink usual path
+    - name: Symlink usual path
       ansible.builtin.file:
         src: "{{ memcapture_bin_path }}/LiME-master"
         dest: "{{ memcapture_bin_path }}/LiME"
         state: link
-  when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download|bool) and clonelime.failed
+  when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download | bool) and clonelime.failed
 
 - name: Check if volatility source is present
   ansible.builtin.stat: path={{ memcapture_bin_path }}/volatility
@@ -101,7 +101,7 @@
     repo: https://github.com/volatilityfoundation/volatility
     dest: "{{ memcapture_bin_path }}/volatility"
     version: "{{ memcapture_volatility_version | default('f1ac0b1e90cf486da2a37cffb3448b208943d226') }}"
-  when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download|bool)
+  when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download | bool)
   ignore_errors: true
   register: clonevol
 
@@ -119,29 +119,29 @@
         state: present
       register: pkg_result
       until: pkg_result is success
-    - name: unarchive Volatility
+    - name: Unarchive Volatility
       ansible.builtin.unarchive:
         src: "{{ memcapture_bin_path }}/volatility-2.6.zip"
         dest: "{{ memcapture_bin_path }}"
         creates: "{{ memcapture_bin_path }}/volatility-master/setup.py"
-    - name: symlink usual path
+    - name: Symlink usual path
       ansible.builtin.file:
         src: "{{ memcapture_bin_path }}/volatility-master"
         dest: "{{ memcapture_bin_path }}/volatility"
         state: link
-  when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download|bool) and clonevol.failed
+  when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download | bool) and clonevol.failed
 
 - name: Check if LMG directory is present
   ansible.builtin.stat: path={{ memcapture_bin_path }}/lmg
   register: gitlmg
 #    repo=https://github.com/juju4/lmg
-- name: lmg git clone
+- name: Lmg git clone
   ansible.builtin.git:
     repo: https://github.com/halpomeranz/lmg
     dest: "{{ memcapture_bin_path }}/lmg"
     version: "{{ memcapture_lmg_version | default('2cef0e6b67b30c595f73a4f8c28e3cb862f69189') }}"
     update: no
-  when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download|bool)
+  when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download | bool)
   ignore_errors: true
   register: clonelmg
 
@@ -159,17 +159,17 @@
         state: present
       register: pkg_result
       until: pkg_result is success
-    - name: unarchive LMG
+    - name: Unarchive LMG
       ansible.builtin.unarchive:
         src: "{{ memcapture_bin_path }}/LMG.zip"
         dest: "{{ memcapture_bin_path }}"
         creates: "{{ memcapture_bin_path }}/lmg-master/src/Makefile"
-    - name: symlink usual path
+    - name: Symlink usual path
       ansible.builtin.file:
         src: "{{ memcapture_bin_path }}/lmg-master"
         dest: "{{ memcapture_bin_path }}/lmg"
         state: link
-  when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download|bool) and clonelmg.failed
+  when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download | bool) and clonelmg.failed
 
 - name: CPU included in KVER
   ansible.builtin.replace:
@@ -178,7 +178,7 @@
     replace: 'LIMEMOD=$LIMEDIR/lime-$KVER.ko'
     backup: yes
   when: (memcapture_install is defined and memcapture_install)
-- name: update volatility dir
+- name: Update volatility dir
   ansible.builtin.replace:
     dest: "{{ memcapture_bin_path }}/lmg/lmg"
     regexp: 'VOLDIR=\$\(dirname \$\(find \$BUILDDIR -name module.c\) 2\>/dev/null\)'
@@ -200,10 +200,10 @@
   ansible.builtin.unarchive:
     src: "{{ memcapture_bin_path }}/lmg/static-dwarfdump.tgz"
     dest: "{{ memcapture_bin_path }}/lmg"
-  when: not dwarf.stat.exists and (memcapture_download is defined and memcapture_download|bool)
+  when: not dwarf.stat.exists and (memcapture_download is defined and memcapture_download | bool)
   failed_when: false
 
-- name: update module.dwarf build path in lmg
+- name: Update module.dwarf build path in lmg
   ansible.builtin.replace:
     dest: "{{ memcapture_bin_path }}/lmg/lmg"
     regexp: 'cd \$VOLDIR$'
@@ -220,14 +220,14 @@
     TARGETDIR: "{{ dst_path }}"
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ memcapture_bin_path }}/lmg/dwarfdump"
   become: yes
-  when: not memcapture.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
+  when: not memcapture.stat.exists and (memcapture_capture is defined and memcapture_capture | bool)
   ignore_errors: true
   register: lmgout
 
 ## https://github.com/volatilityfoundation/volatility/wiki/Linux
 - name: Linux not alpine
   block:
-    - name: retrieve lmg output dir
+    - name: Retrieve lmg output dir
       ansible.builtin.shell: |
         set -o pipefail
         ls -At {{ dst_path }}/capture/ | head -1
@@ -243,7 +243,7 @@
   when: ansible_distribution != 'Alpine'
 - name: Alpine
   block:
-    - name: retrieve lmg output dir
+    - name: Retrieve lmg output dir
       ansible.builtin.shell: |
         set -o pipefail
         ls -At {{ dst_path }}/capture/ | head -1
@@ -256,7 +256,7 @@
         fname: "{{ lscapture.stdout }}"
   when: ansible_distribution == 'Alpine'
 
-- name: retrieve output hash
+- name: Retrieve output hash
   ansible.builtin.stat: path="{{ dst_path }}/capture/{{ fname }}/{{ fname }}-memory.lime" checksum_algorithm=sha256
   register: outputstat
 - name: Debug | output file hash
@@ -266,7 +266,7 @@
   block:
     - name: Debug | kernel
       ansible.builtin.debug: var=ansible_kernel
-    - name: recreate volatility profile archive
+    - name: Recreate volatility profile archive
       ansible.builtin.command: >
         zip {{ memcapture_bin_path }}/volatility/volatility/plugins/overlays/linux/{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip
         volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }}
@@ -274,7 +274,7 @@
         chdir: "{{ memcapture_bin_path }}"
         creates: "{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip"
 
-    - name: check profile is valid
+    - name: Check profile is valid
       ansible.builtin.command: >
         python {{ memcapture_bin_path }}/volatility/vol.py --plugins . -f {{ fname }}-memory.lime
             --profile {{ fname }}-profile imageinfo

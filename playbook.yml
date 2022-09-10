@@ -1,6 +1,7 @@
 ---
 
-- hosts: all
+- name: Memory capture playbook
+  hosts: all
   become: true
   vars:
     tmp_path: /tmp

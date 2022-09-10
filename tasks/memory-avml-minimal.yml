@@ -12,7 +12,7 @@
     mode: '0700'
   register: dl_result
   until: dl_result is success
-  when: memcapture_download|bool
+  when: memcapture_download | bool
 
 - name: Install avml locally
   ansible.builtin.copy:
@@ -20,4 +20,4 @@
     dest: /usr/local/bin/
     mode: '0700'
     remote_src: true
-  when: memcapture_install|bool
+  when: memcapture_install | bool

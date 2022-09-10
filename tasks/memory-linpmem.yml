@@ -15,7 +15,7 @@
     state: present
   register: pkg_result
   until: pkg_result is success
-  when: memcapture_install and (ansible_os_family == "RedHat" and ansible_distribution_major_version|int != 8)
+  when: memcapture_install and (ansible_os_family == "RedHat" and ansible_distribution_major_version | int != 8)
 #  when: >
 #    memcapture_install and
 #    ansible_selinux is defined and ansible_selinux and ansible_selinux.status == 'enabled'
@@ -31,7 +31,7 @@
     mode: '0400'
   register: dl_result
   until: dl_result is success
-  when: not linpmem.stat.exists and (memcapture_download is defined and memcapture_download|bool)
+  when: not linpmem.stat.exists and (memcapture_download is defined and memcapture_download | bool)
 
 - name: Extract linpmem
   ansible.builtin.command: "gunzip {{ linpmem_archive }} chdir={{ memcapture_bin_path }}"
@@ -47,7 +47,7 @@
     remote_src: true
   when: memcapture_install
 
-- name: check appropriate permissions
+- name: Check appropriate permissions
   ansible.builtin.file:
     path: "{{ linpmem_bin }}"
     mode: '0700'
@@ -57,27 +57,27 @@
     path: "{{ linpmem_capture }}"
   register: memcapture2
 
-- name: memory capture (linpmem)
+- name: Memory capture (linpmem)
   ansible.builtin.command: "{{ linpmem_bin }} {{ memcapture_linpmem_args }} -o {{ linpmem_capture }}"
   args:
     chdir: "{{ memcapture_bin_path }}"
   become: yes
-  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture | bool)
   failed_when: false
   async: "{{ memcapture_retries * memcapture_delay }}"
   poll: 0
   register: linpmemcapture
 
-- name: check on async task for linpmem capture
+- name: Check on async task for linpmem capture
   ansible.builtin.async_status:
     jid: "{{ linpmemcapture.ansible_job_id }}"
   register: job_result
   until: job_result.finished or linpmemcapture.finished
   retries: "{{ memcapture_retries }}"
   delay: "{{ memcapture_delay }}"
-  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture | bool)
 
-- name: retrieve output hash
+- name: Retrieve output hash
   ansible.builtin.stat:
     path: "{{ linpmem_capture }}"
     checksum_algorithm: sha256
@@ -99,4 +99,4 @@
         t: "{{ dst_path }}/{{ prefix }}-proc-kcore"
     }
   failed_when: false
-  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture|bool)
+  when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture | bool)
