@@ -9,7 +9,8 @@
     osxpmem_capture: "{{ dst_path }}/{{ prefix }}-memory.{{ memcapture_osxpmem_ext }}"
 
 - name: Check if osxpmem archive is present
-  ansible.builtin.stat: path={{ osxpmem_archive }}
+  ansible.builtin.stat:
+    path: "{{ osxpmem_archive }}"
   register: osxpmem
 - name: Osxpmem download
   ansible.builtin.get_url:
@@ -22,7 +23,8 @@
   when: not osxpmem.stat.exists and memcapture_download | bool
 
 - name: Debug | osxpmem binary
-  ansible.builtin.debug: var=osxpmem_bin
+  ansible.builtin.debug:
+    var: osxpmem_bin
 - name: Extract osxpmem
   ansible.builtin.unarchive:
     src: "{{ osxpmem_archive }}"
@@ -32,16 +34,17 @@
     remote_src: true
 
 - name: Debug | Google Santa mode
-  ansible.builtin.debug: var=harden_darwin_santa_mode
+  ansible.builtin.debug:
+    var: harden_darwin_santa_mode
 - name: Google Santa
+  when: harden_darwin_santa_mode is defined and (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
   block:
     - name: Ensure config set to monitor mode
-      osx_defaults:
+      community.general.osx_defaults:
         domain: /var/db/santa/config.plist
         key: ClientMode
         value: 0
         type: int
-  when: harden_darwin_santa_mode is defined and (harden_darwin_santa_mode == 'LOCKDOWN' or harden_darwin_santa_mode == 2)
 
 - name: Darwin | Memory capture
   block:
@@ -57,9 +60,11 @@
     ##      from volatility, require Apple Kernel Developer Kit which is not installed by default...
     ##      https://github.com/volatilityfoundation/volatility/issues/349
     - name: Check if Kernel Debug Kit present
-      ansible.builtin.stat: path=/Library/Developer/KDKs
+      ansible.builtin.stat:
+        path: /Library/Developer/KDKs
       register: kdk
     - name: Generate volatility2 profile
+      when: kdk.stat.exists
       block:
         - name: Retrieve KDK latest dir
           ansible.builtin.shell: "ls -At /Library/Developer/KDKs/ | head -1"
@@ -114,16 +119,16 @@
           ignore_errors: true
           when: memcapture_osxpmem_ext == 'raw'
         - name: Debug | check profile output
-          ansible.builtin.debug: var=checkprofile
-          ## to validate with rekall
-          # rekall convert_profile vol-profile.zip rekall-profile.json
-          # rekall --profile rekall-profile.json -f mem.aff4 psaux
+          ansible.builtin.debug:
+            var: checkprofile
 
-      when: kdk.stat.exists
+            ## to validate with rekall
+            # rekall convert_profile vol-profile.zip rekall-profile.json
+            # rekall --profile rekall-profile.json -f mem.aff4 psaux
 
   always:
     - name: Ensure config set to lockdown mode
-      osx_defaults:
+      community.general.osx_defaults:
         domain: /var/db/santa/config.plist
         key: ClientMode
         value: "{{ harden_darwin_santa_mode }}"
@@ -136,4 +141,5 @@
     checksum_algorithm: sha256
   register: outputstat
 - name: Debug | file output hash
-  ansible.builtin.debug: var=outputstat.stat.checksum
+  ansible.builtin.debug:
+    var: outputstat.stat.checksum

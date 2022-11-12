@@ -1,18 +1,23 @@
 ---
 
 - name: Ensure gcc is present
-  ansible.builtin.package: name=gcc state=present
+  ansible.builtin.package:
+    name: gcc
+    state: present
   register: pkg_result
   until: pkg_result is success
 
 - name: Check if gcc path exists
-  ansible.builtin.stat: path=/usr/bin/gcc
+  ansible.builtin.stat:
+    path: /usr/bin/gcc
   register: gcc
 - name: Check if gcc-5 path exists
-  ansible.builtin.stat: path=/usr/bin/gcc-5
+  ansible.builtin.stat:
+    path: /usr/bin/gcc-5
   register: gcc5
 - name: Check if gcc-4.8 path exists
-  ansible.builtin.stat: path=/usr/bin/gcc-4.8
+  ansible.builtin.stat:
+    path: /usr/bin/gcc-4.8
   register: gcc4
 
 # - ansible.builtin.debug: var=gcc

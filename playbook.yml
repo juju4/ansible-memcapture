@@ -8,25 +8,32 @@
   tasks:
     ## https://github.com/google/rekall/releases
     - name: Check linpmem stat
-      ansible.builtin.stat: path={{ tmp_path }}/linpmem_2.0.1.gz
+      ansible.builtin.stat:
+        path: "{{ tmp_path }}/linpmem_2.0.1.gz"
       register: linpmem
     - name: Linpmem download
-      ansible.builtin.get_url: url=https://github.com/google/rekall/releases/download/v1.3.2/linpmem_2.0.1.gz
-        dest={{ tmp_path }}/linpmem_2.0.1.gz
-        mode=0400
+      ansible.builtin.get_url:
+        url: "https://github.com/google/rekall/releases/download/v1.3.2/linpmem_2.0.1.gz"
+        dest: "{{ tmp_path }}/linpmem_2.0.1.gz"
+        mode: "0400"
       when: not linpmem.stat.exists
     - name: Check capture file stat
-      ansible.builtin.stat: path={{ tmp_path }}/memcapture.aff4
+      ansible.builtin.stat:
+        path: "{{ tmp_path }}/memcapture.aff4"
       register: memcapture2
     - name: Validate memory capture (linpmem)
-      ansible.builtin.command: "{{ item }} chdir={{ tmp_path }}"
+      ansible.builtin.command: "{{ item }}"
+      args:
+        chdir: "{{ tmp_path }}"
       with_items:
         - gunzip linpmem_2.0.1.gz
         - chmod 700 linpmem_2.0.1
         - ./linpmem_2.0.1 -o {{ tmp_path }}/memcapture.aff4
       when: not memcapture2.stat.exists
     - name: Retrieve file to orchestrator
-      ansible.builtin.fetch: src={{ tmp_path }}/memcapture.aff4 dest=memcapture-{{ ansible_hostname }}.aff4
+      ansible.builtin.fetch:
+        src: "{{ tmp_path }}/memcapture.aff4"
+        dest: "memcapture-{{ ansible_hostname }}.aff4"
 
 ## FIXME! nc or ssh output? check impact on memory
 

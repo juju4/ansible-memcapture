@@ -2,7 +2,8 @@
 ## for older systems, use fmem
 ## FIXME! rpm packages from https://forensics.cert.org/
 - name: FATAL
-  ansible.builtin.fail: msg="Missing memory size! required for fmem."
+  ansible.builtin.fail:
+    msg: "Missing memory size! required for fmem."
   when: memory_size is undefined
 
 - name: Debian | Extra packages install
@@ -35,7 +36,8 @@
 # change memory size
 
 - name: Check if already a capture file
-  ansible.builtin.stat: path={{ dst_path }}/{{ prefix }}-fmem-memory.img
+  ansible.builtin.stat:
+    path: "{{ dst_path }}/{{ prefix }}-fmem-memory.img"
   register: memcapture2
 - name: FMEM | procinfo
   ansible.builtin.shell: "{{ item }}"  # noqa command-instead-of-shell
@@ -46,7 +48,8 @@
   when: not memcapture2.stat.exists
 
 - name: Check if fmem.ko exists
-  ansible.builtin.stat: path={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem.ko
+  ansible.builtin.stat:
+    path: "{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem.ko"
   register: fmemko
 ## fmem.ko is probably kernel dependent, so better rebuild... or prebuilt
 - name: FMEM | memory capture
@@ -63,7 +66,9 @@
 #     replace: '{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem-{{ ansible_kernel }}.ko'
 
 - name: FMEM | memory capture (1)
-  ansible.builtin.command: "./run.sh chdir={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"
+  ansible.builtin.command: "./run.sh"
+  args:
+    chdir: "{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"
   become: yes
   ## if run.sh/fmem.ko already loaded
   failed_when: false
@@ -78,7 +83,10 @@
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture | bool)
 
 - name: Retrieve output hash
-  ansible.builtin.stat: path="{{ dst_path }}/{{ prefix }}-memory-fmem.img" checksum_algorithm=sha256
+  ansible.builtin.stat:
+    path: "{{ dst_path }}/{{ prefix }}-memory-fmem.img"
+    checksum_algorithm: sha256
   register: outputstat
 - name: Debug | file output hash
-  ansible.builtin.debug: var=outputstat.stat.checksum
+  ansible.builtin.debug:
+    var: outputstat.stat.checksum

@@ -6,11 +6,11 @@
     winpmem_capture: "{{ dst_path }}\\{{ prefix }}-memory.{{ memcapture_winpmem_ext }}"
 
 - name: Check if winpmem binary is present
-  win_stat:
+  ansible.windows.win_stat:
     path: "{{ winpmem_bin }}"
   register: winpmem
 - name: Winpmem download
-  win_get_url:
+  ansible.windows.win_get_url:
     url: "{{ memcapture_winpmem_url }}"
     dest: "{{ winpmem_bin }}"
     mode: '0400'
@@ -19,18 +19,19 @@
   when: not winpmem.stat.exists and memcapture_download | bool
 
 - name: Check if existing winpmem capture
-  win_stat:
+  ansible.windows.win_stat:
     path: "{{ winpmem_capture }}"
   register: memcapture2
 
 # https://df-stream.com/2017/08/memory-acquisition-and-virtual-secure/
 # http://blog.rekall-forensic.com/2018/09/virtual-secure-mode-and-memory.html
 - name: Check if Virtual Secure Mode is enabled
-  win_shell: Get-Process 'Secure System' -ErrorAction SilentlyContinue
+  ansible.windows.win_shell: Get-Process 'Secure System' -ErrorAction SilentlyContinue
   register: vsm
 
 - name: Debug | Virtual Secure Mode
-  ansible.builtin.debug: var=vsm
+  ansible.builtin.debug:
+    var: vsm
 
 - name: Wait user confirmation before starting memory capture
   ansible.builtin.pause:
@@ -50,7 +51,8 @@
     path: "{{ winpmem_capture }}"
   register: outputstat
 - name: Debug | output file hash
-  ansible.builtin.debug: var=outputstat.stat.checksum
+  ansible.builtin.debug:
+    var: outputstat.stat.checksum
 
 ## https://docs.google.com/presentation/d/1savcvqRcMXpRyVrybWvbHGbJTgjInZcwLB5VokJdKa8/edit#slide=id.g26dcd0ccb_030
 # "c:\Program Files\Rekall\winpmem_1.6.0.exe" -e - | c:\Users\mic\Desktop\ncat.exe 172.16.21.93 8001  --ssl

@@ -1,7 +1,9 @@
 ---
 
 - name: Debian | Extra packages install for lmg
-  ansible.builtin.apt: name={{ memory_lmg_deps }} state=present
+  ansible.builtin.apt:
+    name: "{{ memory_lmg_deps }}"
+    state: present
   become: yes
   when: >
     (memcapture_install is defined and memcapture_install | bool) and
@@ -13,7 +15,9 @@
   until: pkg_result is success
 
 - name: Redhat | Extra packages install for lmg
-  ansible.builtin.yum: name={{ memory_lmg_deps }} state=present
+  ansible.builtin.yum:
+    name: "{{ memory_lmg_deps }}"
+    state: present
   become: yes
   when: >
     (memcapture_install is defined and memcapture_install | bool) and
@@ -21,7 +25,8 @@
   register: pkg_result
   until: pkg_result is success
 
-- import_tasks: gcc.yml
+- name: Import gcc
+  ansible.builtin.import_tasks: gcc.yml
 
 - name: Check installed kernels
   ansible.builtin.command: "ls /usr/src/kernels/"
@@ -40,10 +45,12 @@
     (memcapture_install is defined and memcapture_install) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - name: Debug | kernel src directories
-  ansible.builtin.debug: var=d1.stdout_lines
+  ansible.builtin.debug:
+    var: d1.stdout_lines
   when: (memcapture_install is defined and memcapture_install | bool)
 - name: Debug | kernel-headers packages
-  ansible.builtin.debug: var=d2.stdout_lines
+  ansible.builtin.debug:
+    var: d2.stdout_lines
   when: (memcapture_install is defined and memcapture_install | bool)
 - name: Ensure appropriate symlink to latest src/kernels in order to build module
   ansible.builtin.file:
@@ -56,7 +63,8 @@
     (memcapture_install is defined and memcapture_install | bool) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - name: Check if LiME directory is present
-  ansible.builtin.stat: path={{ memcapture_bin_path }}/LiME
+  ansible.builtin.stat:
+    path: "{{ memcapture_bin_path }}/LiME"
   register: gitlime
 - name: Lime git clone
   ansible.builtin.git:
@@ -69,6 +77,7 @@
 
 # if https://help.github.com/articles/https-cloning-errors/
 - name: Get Lime
+  when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download | bool) and clonelime.failed
   block:
     - name: Lime fetch - alternate
       ansible.builtin.get_url:
@@ -91,10 +100,10 @@
         src: "{{ memcapture_bin_path }}/LiME-master"
         dest: "{{ memcapture_bin_path }}/LiME"
         state: link
-  when: not gitlime.stat.exists and (memcapture_download is defined and memcapture_download | bool) and clonelime.failed
 
 - name: Check if volatility source is present
-  ansible.builtin.stat: path={{ memcapture_bin_path }}/volatility
+  ansible.builtin.stat:
+    path: "{{ memcapture_bin_path }}/volatility"
   register: gitvol
 - name: Volatility git clone
   ansible.builtin.git:
@@ -107,6 +116,7 @@
 
 # if https://help.github.com/articles/https-cloning-errors/
 - name: If git clone failed
+  when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download | bool) and clonevol.failed
   block:
     - name: Volatility fetch - alternate
       ansible.builtin.get_url:
@@ -129,10 +139,10 @@
         src: "{{ memcapture_bin_path }}/volatility-master"
         dest: "{{ memcapture_bin_path }}/volatility"
         state: link
-  when: not gitvol.stat.exists and (memcapture_download is defined and memcapture_download | bool) and clonevol.failed
 
 - name: Check if LMG directory is present
-  ansible.builtin.stat: path={{ memcapture_bin_path }}/lmg
+  ansible.builtin.stat:
+    path: "{{ memcapture_bin_path }}/lmg"
   register: gitlmg
 #    repo=https://github.com/juju4/lmg
 - name: Lmg git clone
@@ -147,6 +157,7 @@
 
 # if https://help.github.com/articles/https-cloning-errors/
 - name: If lmg git clone failed
+  when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download | bool) and clonelmg.failed
   block:
     - name: LMG fetch - alternate
       ansible.builtin.get_url:
@@ -169,7 +180,6 @@
         src: "{{ memcapture_bin_path }}/lmg-master"
         dest: "{{ memcapture_bin_path }}/lmg"
         state: link
-  when: not gitlmg.stat.exists and (memcapture_download is defined and memcapture_download | bool) and clonelmg.failed
 
 - name: CPU included in KVER
   ansible.builtin.replace:
@@ -191,9 +201,11 @@
   changed_when: false
   register: lmgdir
 - name: Debug | lmg directory listing
-  ansible.builtin.debug: var=lmgdir
+  ansible.builtin.debug:
+    var: lmgdir
 - name: Check if dwarfdump-i686 is present
-  ansible.builtin.stat: path={{ memcapture_bin_path }}/lmg/dwarfdump/dwarfdump-i686
+  ansible.builtin.stat:
+    path: "{{ memcapture_bin_path }}/lmg/dwarfdump/dwarfdump-i686"
   register: dwarf
 ## Note: if nfs/samba mount, owner/perms might not be preserved so ignore those errors
 - name: Extract dwarfdump utilities
@@ -211,7 +223,8 @@
     backup: yes
 
 - name: Check if existing LMG capture
-  ansible.builtin.stat: path={{ dst_path }}/lmg/capture
+  ansible.builtin.stat:
+    path: "{{ dst_path }}/lmg/capture"
   register: memcapture
 - name: Take memory capture (lmg/lime)
   # command: "bash lmg -y chdir={{ memcapture_bin_path }}/lmg"
@@ -226,6 +239,7 @@
 
 ## https://github.com/volatilityfoundation/volatility/wiki/Linux
 - name: Linux not alpine
+  when: ansible_distribution != 'Alpine'
   block:
     - name: Retrieve lmg output dir
       ansible.builtin.shell: |
@@ -240,8 +254,8 @@
       ansible.builtin.set_fact:
         # fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
         fname: "{{ lscapture.stdout }}"
-  when: ansible_distribution != 'Alpine'
 - name: Alpine
+  when: ansible_distribution == 'Alpine'
   block:
     - name: Retrieve lmg output dir
       ansible.builtin.shell: |
@@ -254,18 +268,26 @@
       ansible.builtin.set_fact:
         # fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
         fname: "{{ lscapture.stdout }}"
-  when: ansible_distribution == 'Alpine'
 
 - name: Retrieve output hash
-  ansible.builtin.stat: path="{{ dst_path }}/capture/{{ fname }}/{{ fname }}-memory.lime" checksum_algorithm=sha256
+  ansible.builtin.stat:
+    path: "{{ dst_path }}/capture/{{ fname }}/{{ fname }}-memory.lime"
+    checksum_algorithm: sha256
   register: outputstat
 - name: Debug | output file hash
-  ansible.builtin.debug: var=outputstat.stat.checksum
+  ansible.builtin.debug:
+    var: outputstat.stat.checksum
 
 - name: Profile
+  when: >
+    not (ansible_virtualization_type is defined and
+          (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker")
+        ) and
+    not (ansible_distribution_major_version == "6" and ansible_virtualization_type == "kvm")
   block:
     - name: Debug | kernel
-      ansible.builtin.debug: var=ansible_kernel
+      ansible.builtin.debug:
+        var: ansible_kernel
     - name: Recreate volatility profile archive
       ansible.builtin.command: >
         zip {{ memcapture_bin_path }}/volatility/volatility/plugins/overlays/linux/{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip
@@ -285,13 +307,10 @@
       # failed_when: "'Invalid profile' in checkprofile.stderr"
       failed_when: false
     - name: Debug | profile check output
-      ansible.builtin.debug: var=checkprofile
-  when: >
-    not (ansible_virtualization_type is defined and
-          (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker")
-        ) and
-    not (ansible_distribution_major_version == "6" and ansible_virtualization_type == "kvm")
+      ansible.builtin.debug:
+        var: checkprofile
 
 - name: Debug | lmg output
-  ansible.builtin.debug: var=lmgout.stdout_lines
+  ansible.builtin.debug:
+    var: lmgout.stdout_lines
   when: lmgout is defined and lmgout.rc is defined and lmgout.rc != 0

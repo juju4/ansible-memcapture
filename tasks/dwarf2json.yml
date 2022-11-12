@@ -1,7 +1,8 @@
 ---
 # rhel/centos: kernel-debuginfo
 
-- import_tasks: ddebs-repositories.yml
+- name: Import ddebs-repositories
+  ansible.builtin.import_tasks: ddebs-repositories.yml
 
 - name: Debian | install kernel debug package
   ansible.builtin.apt:

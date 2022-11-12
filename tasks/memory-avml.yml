@@ -15,6 +15,7 @@
   delegate_to: localhost
 
 - name: Install avml
+  when: not avmlbin.stat.exists
   block:
     - name: Ensure ansible dependencies are present
       ansible.builtin.package:
@@ -105,7 +106,6 @@
         src: "{{ avml_bin }}"
         dest: "{{ orchestrator_files_archives }}/"
         flat: yes
-  when: not avmlbin.stat.exists
 
 - name: Avml | Recover file on orchestrator
   ansible.builtin.copy:
