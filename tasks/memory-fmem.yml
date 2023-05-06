@@ -40,7 +40,8 @@
     path: "{{ dst_path }}/{{ prefix }}-fmem-memory.img"
   register: memcapture2
 - name: FMEM | procinfo
-  ansible.builtin.shell: "{{ item }}"  # noqa command-instead-of-shell
+  ansible.builtin.shell:  # noqa command-instead-of-shell no-changed-when
+    cmd: "{{ item }}"
   with_items:
     - "cat /proc/meminfo > {{ dst_path }}/{{ prefix }}-proc-meminfo"
     - "cat /proc/iomem > {{ dst_path }}/{{ prefix }}-proc-iomem"
@@ -53,9 +54,10 @@
   register: fmemko
 ## fmem.ko is probably kernel dependent, so better rebuild... or prebuilt
 - name: FMEM | memory capture
-  ansible.builtin.command: "{{ item }} chdir={{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"
-  with_items:
-    - make
+  ansible.builtin.command:  # noqa no-changed-when
+    cmd: make
+  args:
+    chdir: "{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"
   when: not fmemko.stat.exists and (memcapture_build is defined and memcapture_build | bool)
 
 ## if multiple pre-compiled fmem
@@ -66,7 +68,8 @@
 #     replace: '{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem-{{ ansible_kernel }}.ko'
 
 - name: FMEM | memory capture (1)
-  ansible.builtin.command: "./run.sh"
+  ansible.builtin.command:  # noqa no-changed-when
+    cmd: "./run.sh"
   args:
     chdir: "{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"
   become: yes
@@ -74,8 +77,9 @@
   failed_when: false
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture | bool)
 - name: FMEM | memory capture (2)
-  ansible.builtin.command: >
-    dd if=/dev/fmem of={{ dst_path }}/{{ prefix }}-memory-fmem.img conv=noerror,sync bs={{ memcapture_memory_bs }}
+  ansible.builtin.command:  # noqa no-changed-when
+    cmd: >
+      dd if=/dev/fmem of={{ dst_path }}/{{ prefix }}-memory-fmem.img conv=noerror,sync bs={{ memcapture_memory_bs }}
         count={{ memcapture_memory_size }}
   args:
     chdir: "{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}"

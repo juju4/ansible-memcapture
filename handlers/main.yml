@@ -1,5 +1,5 @@
 ---
 
 ## https://technet.microsoft.com/en-us/sysinternals/bb897438.aspx
-- name: Win disk sync
+- name: Win disk sync  # noqa no-changed-when
   ansible.builtin.raw: "{{ memcapture_bin_path }}\\sync.exe -r -e"

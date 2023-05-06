@@ -22,7 +22,8 @@
         path: "{{ tmp_path }}/memcapture.aff4"
       register: memcapture2
     - name: Validate memory capture (linpmem)
-      ansible.builtin.command: "{{ item }}"
+      ansible.builtin.command:  # noqa no-changed-when
+        cmd: "{{ item }}"
       args:
         chdir: "{{ tmp_path }}"
       with_items:

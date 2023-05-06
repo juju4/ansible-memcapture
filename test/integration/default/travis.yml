@@ -1,11 +1,13 @@
 ---
 
-- hosts: all
+- name: Test integration playbook
+  hosts: all
   vars:
     memcapture_capture: false
     orchestrator_files_archives: /tmp
   pre_tasks:
-    - set_fact:
+    - name: Use avml
+      ansible.builtin.set_fact:
         memcapture_use_avml: false
       when: >
         ansible_os_family == "RedHat" or

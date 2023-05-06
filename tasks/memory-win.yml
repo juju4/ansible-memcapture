@@ -37,7 +37,7 @@
   ansible.builtin.pause:
 
 ## FIXME! through powershell ? (ansible 'script:')
-- name: Do memory capture (winpmem)
+- name: Do memory capture (winpmem)  # noqa no-changed-when
   ansible.builtin.raw: "{{ winpmem_bin }} -o {{ winpmem_capture }}"
   when: not memcapture2.stat.exists and (memcapture_capture is defined and memcapture_capture | bool)
   notify:

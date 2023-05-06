@@ -1,8 +1,10 @@
 ---
 
-- hosts: all
+- name: Test vagrant playbook
+  hosts: all
   pre_tasks:
-    - set_fact:
+    - name: Use avml
+      ansible.builtin.set_fact:
         memcapture_use_avml: false
       when: >
         ansible_os_family == "RedHat" or

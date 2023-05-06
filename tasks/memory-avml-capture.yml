@@ -6,7 +6,8 @@
   register: memcapture2
 
 - name: Memory capture (avml)
-  ansible.builtin.command: "/usr/local/bin/avml {{ memcapture_avml_args }} {{ avml_capture }}"
+  ansible.builtin.command:  # noqa no-changed-when
+    cmd: "/usr/local/bin/avml {{ memcapture_avml_args }} {{ avml_capture }}"
   args:
     chdir: "{{ memcapture_bin_path }}"
   become: yes

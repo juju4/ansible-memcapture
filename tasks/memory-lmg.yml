@@ -36,9 +36,8 @@
     (memcapture_install is defined and memcapture_install | bool) and
     (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
 - name: Redhat | check installed kernel-headers rpm
-  ansible.builtin.command: "rpm -qa kernel-headers"
-  args:
-    warn: False
+  ansible.builtin.command:  # noqa command-instead-of-module
+    cmd: "rpm -qa kernel-headers"
   changed_when: false
   register: d2
   when: >
@@ -228,7 +227,8 @@
   register: memcapture
 - name: Take memory capture (lmg/lime)
   # command: "bash lmg -y chdir={{ memcapture_bin_path }}/lmg"
-  ansible.builtin.command: "bash lmg -y -d {{ dst_path }} -B {{ memcapture_bin_path }}/LiME/src chdir={{ memcapture_bin_path }}/lmg"
+  ansible.builtin.command:  # noqa no-changed-when
+    cmd: "bash lmg -y -d {{ dst_path }} -B {{ memcapture_bin_path }}/LiME/src chdir={{ memcapture_bin_path }}/lmg"
   environment:
     TARGETDIR: "{{ dst_path }}"
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:{{ memcapture_bin_path }}/lmg/dwarfdump"
