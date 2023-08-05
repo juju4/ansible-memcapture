@@ -1,3 +1,6 @@
 ---
 warn_list:
   - var-spacing
+  - experimental
+exclude_paths:
+  - .github/workflows/galaxy.yml
