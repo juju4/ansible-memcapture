@@ -1,0 +1,20 @@
+---
+
+memory_lmg_deps:
+  - git
+  - zip
+  - make
+  - gcc
+  - linux-generic
+  - linux-headers-{{ ansible_kernel }}
+  - binutils
+
+memcapture_cc: gcc-12
+
+memory_avml_deps:
+  - musl-dev
+  - musl-tools
+  - musl
+  - curl
+#  - cargo
+#  - rustc
