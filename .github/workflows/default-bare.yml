@@ -26,7 +26,7 @@ jobs:
           - os: ubuntu-22.04
             experimental: false
           - os: ubuntu-20.04
-            experimental: false
+            experimental: true
     env:
       ANSIBLE_CALLBACKS_ENABLED: profile_tasks
       ANSIBLE_ROLE: juju4.memcapture
