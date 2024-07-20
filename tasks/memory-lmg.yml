@@ -15,7 +15,7 @@
   until: pkg_result is success
 
 - name: Redhat | Extra packages install for lmg
-  ansible.builtin.yum:
+  ansible.builtin.dnf:
     name: "{{ memory_lmg_deps }}"
     state: present
   become: yes
