@@ -16,7 +16,7 @@
   ansible.builtin.get_url:
     url: "{{ memcapture_osxpmem_url }}"
     dest: "{{ osxpmem_archive }}"
-    mode: 0444
+    mode: '0444'
     # checksum: "{{ memcapture_osxpmem_hash }}"
   register: dl_result
   until: dl_result is success
