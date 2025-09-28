@@ -211,6 +211,7 @@
   ansible.builtin.unarchive:
     src: "{{ memcapture_bin_path }}/lmg/static-dwarfdump.tgz"
     dest: "{{ memcapture_bin_path }}/lmg"
+    remote_src: true
   when: not dwarf.stat.exists and (memcapture_download is defined and memcapture_download | bool)
   failed_when: false
 
