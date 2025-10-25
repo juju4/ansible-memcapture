@@ -53,9 +53,18 @@ jobs:
           { echo '[defaults]'; echo 'callback_whitelist = profile_tasks, timer'; echo 'roles_path = ../'; echo 'ansible_python_interpreter: /usr/bin/python3'; } >> ansible.cfg
       - name: Environment
         run: |
+          set -x
           pwd
           env
-          find -ls
+          find . -ls
+      - name: Cleaning
+        run: |
+          set -x
+          df -h
+          sudo rm -Rf /opt/hostedtoolcache/node/*
+          sudo rm -Rf /usr/lib/jvm/temurin-*-jdk-amd64
+          sudo rm -Rf /usr/local/lib/android
+          df -h
       - name: Before script - systemctl
         run: |
           systemd-analyze security || true
