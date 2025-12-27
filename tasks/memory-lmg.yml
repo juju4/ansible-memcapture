@@ -7,7 +7,7 @@
   become: yes
   when: >
     (memcapture_install is defined and memcapture_install | bool) and
-    (ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu')
+    (ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu')
 ## Note: seems distribution are not keeping their linux-headers for all base kernel...
 ##       Ubuntu12.04 "No package matching 'linux-headers-3.19.0-30-generic' is available"
   failed_when: false
@@ -21,7 +21,7 @@
   become: yes
   when: >
     (memcapture_install is defined and memcapture_install | bool) and
-    (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+    (ansible_facts['os_family'] == "RedHat" or ansible_facts['distribution'] == 'CentOS')
   register: pkg_result
   until: pkg_result is success
 
@@ -34,7 +34,7 @@
   register: d1
   when: >
     (memcapture_install is defined and memcapture_install | bool) and
-    (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+    (ansible_facts['os_family'] == "RedHat" or ansible_facts['distribution'] == 'CentOS')
 - name: Redhat | check installed kernel-headers rpm
   ansible.builtin.command:  # noqa command-instead-of-module
     cmd: "rpm -qa kernel-headers"
@@ -42,7 +42,7 @@
   register: d2
   when: >
     (memcapture_install is defined and memcapture_install) and
-    (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+    (ansible_facts['os_family'] == "RedHat" or ansible_facts['distribution'] == 'CentOS')
 - name: Debug | kernel src directories
   ansible.builtin.debug:
     var: d1.stdout_lines
@@ -54,13 +54,13 @@
 - name: Ensure appropriate symlink to latest src/kernels in order to build module
   ansible.builtin.file:
     src: "/usr/src/kernels/{{ d2.stdout_lines.0 | replace('kernel-headers-', '') }}"
-    dest: "/lib/modules/{{ ansible_kernel }}/build"
+    dest: "/lib/modules/{{ ansible_facts['kernel'] }}/build"
     state: link
   become: yes
   failed_when: false
   when: >
     (memcapture_install is defined and memcapture_install | bool) and
-    (ansible_os_family == "RedHat" or ansible_distribution == 'CentOS')
+    (ansible_facts['os_family'] == "RedHat" or ansible_facts['distribution'] == 'CentOS')
 - name: Check if LiME directory is present
   ansible.builtin.stat:
     path: "{{ memcapture_bin_path }}/LiME"
@@ -240,7 +240,7 @@
 
 ## https://github.com/volatilityfoundation/volatility/wiki/Linux
 - name: Linux not alpine
-  when: ansible_distribution != 'Alpine'
+  when: ansible_facts['distribution'] != 'Alpine'
   block:
     - name: Retrieve lmg output dir
       ansible.builtin.shell: |
@@ -256,7 +256,7 @@
         # fname: "{{ ansible_hostname }}-{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}.{{ ansible_date_time.minute }}.{{ ansible_date_time.second }}"
         fname: "{{ lscapture.stdout }}"
 - name: Alpine
-  when: ansible_distribution == 'Alpine'
+  when: ansible_facts['distribution'] == 'Alpine'
   block:
     - name: Retrieve lmg output dir
       ansible.builtin.shell: |
@@ -281,21 +281,21 @@
 
 - name: Profile
   when: >
-    not (ansible_virtualization_type is defined and
-          (ansible_virtualization_type == "lxc" or ansible_virtualization_type == "docker")
+    not (ansible_facts['virtualization_type'] is defined and
+          (ansible_facts['virtualization_type'] == "lxc" or ansible_facts['virtualization_type'] == "docker")
         ) and
-    not (ansible_distribution_major_version == "6" and ansible_virtualization_type == "kvm")
+    not (ansible_facts['distribution_major_version'] == "6" and ansible_facts['virtualization_type'] == "kvm")
   block:
     - name: Debug | kernel
       ansible.builtin.debug:
-        var: ansible_kernel
+        var: ansible_facts['kernel']
     - name: Recreate volatility profile archive
       ansible.builtin.command: >
-        zip {{ memcapture_bin_path }}/volatility/volatility/plugins/overlays/linux/{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip
-        volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_kernel }}
+        zip {{ memcapture_bin_path }}/volatility/volatility/plugins/overlays/linux/{{ ansible_facts['distribution'] }}{{ ansible_facts['distribution_version'] }}-{{ ansible_facts['architecture'] }}.zip
+        volatility/tools/linux/module.dwarf /boot/System.map-{{ ansible_facts['kernel'] }}
       args:
         chdir: "{{ memcapture_bin_path }}"
-        creates: "{{ ansible_distribution }}{{ ansible_distribution_version }}-{{ ansible_architecture }}.zip"
+        creates: "{{ ansible_facts['distribution'] }}{{ ansible_facts['distribution_version'] }}-{{ ansible_facts['architecture'] }}.zip"
 
     - name: Check profile is valid
       ansible.builtin.command: >

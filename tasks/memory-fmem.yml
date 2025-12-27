@@ -8,7 +8,7 @@
 
 - name: Debian | Extra packages install
   ansible.builtin.apt:
-    name: ['make', 'gcc', 'linux-generic', 'linux-headers-{{ ansible_kernel }}']
+    name: ['make', 'gcc', 'linux-generic', "linux-headers-{{ ansible_facts['kernel'] }}"]
     state: present
   become: yes
   when: memcapture_install is defined and memcapture_install
@@ -65,7 +65,7 @@
 # - replace:
 #     dest: "{{ dst_path }}/run.sh"
 #     regexp: 'fmem.ko'
-#     replace: '{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem-{{ ansible_kernel }}.ko'
+#     replace: '{{ memcapture_bin_path }}/fmem_{{ memcapture_fmem_v }}/fmem-{{ ansible_facts['kernel'] }}.ko'
 
 - name: FMEM | memory capture (1)
   ansible.builtin.command:  # noqa no-changed-when

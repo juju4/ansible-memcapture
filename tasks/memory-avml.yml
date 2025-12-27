@@ -23,7 +23,7 @@
         state: present
       register: pkg_result
       until: pkg_result is success
-      when: memcapture_install and ansible_os_family == "RedHat"
+      when: memcapture_install and ansible_facts['os_family'] == "RedHat"
 
     - name: Check if avml archive is present
       ansible.builtin.stat:
@@ -56,7 +56,7 @@
       when:
         - memcapture_install is defined
         - memcapture_install | bool
-        - ansible_os_family == "Debian"
+        - ansible_facts['os_family'] == "Debian"
 
     - name: Download Rustup
       ansible.builtin.get_url:

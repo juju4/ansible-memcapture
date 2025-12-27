@@ -6,12 +6,12 @@
 
 - name: Debian | install kernel debug package
   ansible.builtin.apt:
-    name: "linux-image-{{ ansible_kernel }}-dbgsym"
+    name: "linux-image-{{ ansible_facts['kernel'] }}-dbgsym"
     state: present
   when: >
-    ansible_os_family == 'Debian' and
-    not (ansible_virtualization_type is defined and
-          (ansible_virtualization_type == "docker" or ansible_virtualization_type == "containerd")
+    ansible_facts['os_family'] == 'Debian' and
+    not (ansible_facts['virtualization_type'] is defined and
+          (ansible_facts['virtualization_type'] == "docker" or ansible_facts['virtualization_type'] == "containerd")
         )
   failed_when: false
 
@@ -33,12 +33,12 @@
 - name: Create symbol file for current kernel
   block:
     - name: Create symbol file for current kernel - debug sym
-      ansible.builtin.shell: "{{ memcapture_bin_path }}/dwarf2json/dwarf2json linux --elf /usr/lib/debug/boot/vmlinux-{{ ansible_kernel }} > {{ dwarffile_path }}/dwarf2json-{{ ansible_kernel }}-dbgsym.json"
+      ansible.builtin.shell: "{{ memcapture_bin_path }}/dwarf2json/dwarf2json linux --elf /usr/lib/debug/boot/vmlinux-{{ ansible_facts['kernel'] }} > {{ dwarffile_path }}/dwarf2json-{{ ansible_facts['kernel'] }}-dbgsym.json"
       args:
-        creates: "{{ dwarffile_path }}/dwarf2json-{{ ansible_kernel }}-dbgsym.json"
+        creates: "{{ dwarffile_path }}/dwarf2json-{{ ansible_facts['kernel'] }}-dbgsym.json"
   rescue:
     - name: Create symbol file for current kernel - /boot
-      ansible.builtin.shell: "{{ memcapture_bin_path }}/dwarf2json/dwarf2json linux --system-map /boot/System.map-{{ ansible_kernel }} > {{ dwarffile_path }}/dwarf2json-{{ ansible_kernel }}.json"
+      ansible.builtin.shell: "{{ memcapture_bin_path }}/dwarf2json/dwarf2json linux --system-map /boot/System.map-{{ ansible_facts['kernel'] }} > {{ dwarffile_path }}/dwarf2json-{{ ansible_facts['kernel'] }}.json"
       args:
-        creates: "{{ dwarffile_path }}/dwarf2json-{{ ansible_kernel }}.json"
+        creates: "{{ dwarffile_path }}/dwarf2json-{{ ansible_facts['kernel'] }}.json"
       failed_when: false

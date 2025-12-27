@@ -29,11 +29,11 @@
     cmd: "update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60"
   when: >
     (not gcc.stat.exists or (gcc.stat.lnk_source is defined and gcc.stat.lnk_source == "/usr/bin/None")) and
-    gcc5.stat.exists and ansible_os_family == 'Debian' and ansible_distribution_release == 'xenial'
+    gcc5.stat.exists and ansible_facts['os_family'] == 'Debian' and ansible_facts['distribution_release'] == 'xenial'
 
 - name: Ubuntu trusty | update default config to gcc-4.8 for gcc
   ansible.builtin.command:  # noqa no-changed-when
     cmd: "update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 60"
   when: >
     (not gcc.stat.exists or (gcc.stat.lnk_source is defined and gcc.stat.lnk_source == "/usr/bin/None")) and
-    gcc4.stat.exists and ansible_os_family == 'Debian' and ansible_distribution_release == 'trusty'
+    gcc4.stat.exists and ansible_facts['os_family'] == 'Debian' and ansible_facts['distribution_release'] == 'trusty'

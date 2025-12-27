@@ -1,14 +1,14 @@
 ---
 
 - name: Include version-specific variables for Ubuntu.
-  ansible.builtin.include_vars: "{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
-  when: ansible_distribution == 'Ubuntu'
+  ansible.builtin.include_vars: "{{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_version'] }}.yml"
+  when: ansible_facts['distribution'] == 'Ubuntu'
 - name: Include version-specific variables for RedHat
-  ansible.builtin.include_vars: "RedHat-{{ ansible_distribution_version.split('.')[0] }}.yml"
-  when: ansible_os_family == "RedHat"
+  ansible.builtin.include_vars: "RedHat-{{ ansible_facts['distribution_major_version'] }}.yml"
+  when: ansible_facts['os_family'] == "RedHat"
 - name: Include specific variables for Alpine
   ansible.builtin.include_vars: "Alpine.yml"
-  when: ansible_distribution == 'Alpine'
+  when: ansible_facts['distribution'] == 'Alpine'
 
 - name: Debug | var memcapture_use_linpmem
   ansible.builtin.debug:
@@ -38,15 +38,15 @@
 
 - name: Windows memory capture
   ansible.builtin.import_tasks: memory-win.yml
-  when: ansible_os_family == 'Windows'
+  when: ansible_facts['os_family'] == 'Windows'
 
 - name: Import dwarf2json
   ansible.builtin.import_tasks: dwarf2json.yml
-  when: ansible_os_family == 'Darwin' or ansible_system == 'Linux'
+  when: ansible_facts['os_family'] == 'Darwin' or ansible_facts['system'] == 'Linux'
 
 - name: Darwin memory capture
   ansible.builtin.import_tasks: memory-darwin.yml
-  when: ansible_os_family == 'Darwin'
+  when: ansible_facts['os_family'] == 'Darwin'
 
 # capture memory
 ## https://docs.google.com/presentation/d/1savcvqRcMXpRyVrybWvbHGbJTgjInZcwLB5VokJdKa8/edit#slide=id.g26dcd0ccb_030
@@ -56,7 +56,7 @@
 - name: Import memory-linpmem
   ansible.builtin.import_tasks: memory-linpmem.yml
   when: >
-    ansible_system == 'Linux' and ansible_architecture == 'x86_64' and
+    ansible_facts['system'] == 'Linux' and ansible_facts['architecture'] == 'x86_64' and
     memcapture_use_linpmem is defined and memcapture_use_linpmem | bool
   tags:
     - linpmem
@@ -65,19 +65,19 @@
 - name: Import memory-fmem
   ansible.builtin.import_tasks: memory-fmem.yml
   when: >
-    ansible_system == 'Linux' and ansible_architecture == 'i386' and
+    ansible_facts['system'] == 'Linux' and ansible_facts['architecture'] == 'i386' and
     memcapture_use_fmem is defined and memcapture_use_fmem | bool
   tags:
     - fmem
 
 - name: Import memory-lmg
   ansible.builtin.import_tasks: memory-lmg.yml
-  when: ansible_system == 'Linux' and memcapture_use_lmg is defined and memcapture_use_lmg | bool
+  when: ansible_facts['system'] == 'Linux' and memcapture_use_lmg is defined and memcapture_use_lmg | bool
   tags:
     - lmg
 
 - name: Linux | avml
-  when: ansible_system == 'Linux' and memcapture_use_avml is defined and memcapture_use_avml | bool
+  when: ansible_facts['system'] == 'Linux' and memcapture_use_avml is defined and memcapture_use_avml | bool
   block:
     - name: Import memory-avml
       ansible.builtin.import_tasks: memory-avml.yml
@@ -99,7 +99,7 @@
 
 ## compress file after?
 - name: Linux but not Alpine
-  when: ansible_system == 'Linux' and ansible_distribution != 'Alpine'
+  when: ansible_facts['system'] == 'Linux' and ansible_facts['distribution'] != 'Alpine'
   block:
     - name: Ensure we have output files (GNU find)
       ansible.builtin.shell: "find {{ dst_path }}/ -ls | egrep '(aff4|lime|zip|fmem|raw|map)'"
@@ -110,7 +110,7 @@
       ansible.builtin.debug:
         var: lsout.stdout_lines
 - name: Alpine
-  when: ansible_system != 'Linux' or ansible_distribution == 'Alpine'
+  when: ansible_facts['system'] != 'Linux' or ansible_facts['distribution'] == 'Alpine'
   block:
     - name: Ensure we have output files
       ansible.builtin.shell: "find {{ dst_path }}/ | egrep '(aff4|lime|zip|fmem|raw|map)'"
