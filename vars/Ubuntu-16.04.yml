@@ -6,7 +6,7 @@ memory_lmg_deps:
   - make
   - gcc
   - linux-generic
-  - linux-headers-{{ ansible_kernel }}
+  - "linux-headers-{{ ansible_facts['kernel'] }}"
   - binutils
 
 memcapture_cc: gcc-5
