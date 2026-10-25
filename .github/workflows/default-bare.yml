@@ -24,7 +24,7 @@ jobs:
           - distribution: ubuntu
             version: '26.04'
             suite: default
-            experimental: false
+            experimental: true
           - distribution: ubuntu
             version: '24.04'
             suite: default
