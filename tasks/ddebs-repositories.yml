@@ -5,6 +5,9 @@
     keyserver: keyserver.ubuntu.com
     id: C8CAB6595FDFF622
     state: present
+  when:
+    - (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] | int < 26) or
+      (ansible_facts['distribution'] == 'Debian' and ansible_facts['distribution_major_version'] | int < 13)
 
 # https://wiki.ubuntu.com/Debug%20Symbol%20Packages
 - name: Ubuntu | Enable debug symbols repositories
